@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8"/>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Считай и играй</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;900&display=swap" rel="stylesheet"/>
+</head>
+<body>
+
+<svg id="bg-svg" viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="bgr" cx="50%" cy="40%" r="70%">
+      <stop offset="0%" stop-color="#2a277a"/>
+      <stop offset="100%" stop-color="#080620"/>
+    </radialGradient>
+  </defs>
+  <rect width="1000" height="700" fill="url(#bgr)"/>
+  <g id="star-g"></g>
+  <g class="cloud">
+    <ellipse cx="130" cy="90" rx="90" ry="30" fill="rgba(255,255,255,.05)"/>
+    <ellipse cx="185" cy="76" rx="55" ry="22" fill="rgba(255,255,255,.05)"/>
+  </g>
+  <g class="cloud">
+    <ellipse cx="780" cy="140" rx="100" ry="32" fill="rgba(255,255,255,.04)"/>
+    <ellipse cx="840" cy="126" rx="60" ry="24" fill="rgba(255,255,255,.04)"/>
+  </g>
+  <circle id="moon" cx="880" cy="72" r="46" fill="#ffe566" opacity=".85">
+    <animate attributeName="opacity" values=".85;.95;.85" dur="5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="902" cy="57" r="37" fill="#110e3a"/>
+</svg>
+
+<!-- ══ MENU ══ -->
+<div id="menu-screen" class="screen">
+  <div class="menu-content">
+    <h1 class="title">Считай и играй</h1>
+    <p class="subtitle">Выбери уровень сложности</p>
+
+    <svg id="morph-svg" class="morph-decoration"
+         viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"></svg>
+
+    <div class="diff-grid">
+
+      <!-- Лёгкий — черепаха -->
+      <button class="diff-btn" data-diff="easy">
+        <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+          <rect x="4" y="4" width="112" height="112" rx="28" fill="#6BFFB8" stroke="#1a6a46" stroke-width="3"/>
+          <rect x="12" y="12" width="40" height="18" rx="9" fill="rgba(255,255,255,.35)"/>
+          <ellipse cx="60" cy="68" rx="28" ry="20" fill="#27ae60" stroke="#1a6e3c" stroke-width="2"/>
+          <ellipse cx="60" cy="62" rx="22" ry="17" fill="#2ecc71" stroke="#1a6e3c" stroke-width="2"/>
+          <ellipse cx="60" cy="62" rx="10" ry="8" fill="#27ae60" stroke="#1a6e3c" stroke-width="1.5"/>
+          <line x1="60" y1="45" x2="60" y2="79" stroke="#1a6e3c" stroke-width="1.5"/>
+          <line x1="38" y1="62" x2="82" y2="62" stroke="#1a6e3c" stroke-width="1.5"/>
+          <ellipse cx="60" cy="44" rx="10" ry="9" fill="#27ae60" stroke="#1a6e3c" stroke-width="2"/>
+          <circle cx="56" cy="41" r="2" fill="#1a3a10"/>
+          <circle cx="64" cy="41" r="2" fill="#1a3a10"/>
+          <ellipse cx="36" cy="72" rx="7" ry="5" fill="#27ae60" stroke="#1a6e3c" stroke-width="1.5" transform="rotate(-20,36,72)"/>
+          <ellipse cx="84" cy="72" rx="7" ry="5" fill="#27ae60" stroke="#1a6e3c" stroke-width="1.5" transform="rotate(20,84,72)"/>
+          <ellipse cx="38" cy="82" rx="6" ry="4" fill="#27ae60" stroke="#1a6e3c" stroke-width="1.5" transform="rotate(10,38,82)"/>
+          <ellipse cx="82" cy="82" rx="6" ry="4" fill="#27ae60" stroke="#1a6e3c" stroke-width="1.5" transform="rotate(-10,82,82)"/>
+        </svg>
+        <span>Лёгкий</span>
+        <small>счёт до 5 · без таймера</small>
+      </button>
+
+      <!-- Средний — заяц -->
+      <button class="diff-btn" data-diff="medium">
+        <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+          <rect x="4" y="4" width="112" height="112" rx="28" fill="#FFD93D" stroke="#8a5c00" stroke-width="3"/>
+          <rect x="12" y="12" width="40" height="18" rx="9" fill="rgba(255,255,255,.35)"/>
+          <ellipse cx="47" cy="36" rx="8" ry="20" fill="#f5f5f5" stroke="#ccc" stroke-width="2"/>
+          <ellipse cx="73" cy="36" rx="8" ry="20" fill="#f5f5f5" stroke="#ccc" stroke-width="2"/>
+          <ellipse cx="47" cy="36" rx="4" ry="15" fill="#ffb3c1"/>
+          <ellipse cx="73" cy="36" rx="4" ry="15" fill="#ffb3c1"/>
+          <ellipse cx="60" cy="80" rx="22" ry="20" fill="#f5f5f5" stroke="#ccc" stroke-width="2"/>
+          <circle cx="60" cy="60" r="17" fill="#f5f5f5" stroke="#ccc" stroke-width="2"/>
+          <circle cx="54" cy="57" r="3" fill="#333"/>
+          <circle cx="66" cy="57" r="3" fill="#333"/>
+          <circle cx="55" cy="56" r="1" fill="white"/>
+          <circle cx="67" cy="56" r="1" fill="white"/>
+          <ellipse cx="60" cy="63" rx="4" ry="3" fill="#ffb3c1"/>
+          <path d="M55,66 Q60,70 65,66" fill="none" stroke="#999" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="40" y1="62" x2="55" y2="64" stroke="#ccc" stroke-width="1"/>
+          <line x1="40" y1="66" x2="55" y2="66" stroke="#ccc" stroke-width="1"/>
+          <line x1="65" y1="64" x2="80" y2="62" stroke="#ccc" stroke-width="1"/>
+          <line x1="65" y1="66" x2="80" y2="66" stroke="#ccc" stroke-width="1"/>
+        </svg>
+        <span>Средний</span>
+        <small>до 8 · сложение · 1.5 мин</small>
+      </button>
+
+      <!-- Сложный — гепард -->
+      <button class="diff-btn" data-diff="hard">
+        <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+  <rect x="4" y="4" width="112" height="112" rx="28" fill="#FF6B9D" stroke="#8a1040" stroke-width="3"/>
+  <rect x="12" y="12" width="40" height="18" rx="9" fill="rgba(255,255,255,.35)"/>
+
+  <!-- Dragon body (round) -->
+  <ellipse cx="60" cy="78" rx="26" ry="20" fill="#6BFFB8" stroke="#1a6a46" stroke-width="2.5"/>
+
+  <!-- Belly highlight -->
+  <ellipse cx="60" cy="84" rx="18" ry="11" fill="#a8ffd0" opacity=".7"/>
+
+  <!-- Wings -->
+  <path d="M 38 70 Q 22 50 18 65 Q 22 75 38 78 Z"
+    fill="#5fd9a0" stroke="#1a6a46" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M 82 70 Q 98 50 102 65 Q 98 75 82 78 Z"
+    fill="#5fd9a0" stroke="#1a6a46" stroke-width="2" stroke-linejoin="round"/>
+
+  <!-- Head -->
+  <circle cx="60" cy="48" r="18" fill="#6BFFB8" stroke="#1a6a46" stroke-width="2.5"/>
+
+  <!-- Snout -->
+  <ellipse cx="60" cy="56" rx="10" ry="7" fill="#a8ffd0" stroke="#1a6a46" stroke-width="2"/>
+
+  <!-- Horns -->
+  <path d="M 50 36 L 47 26 L 54 34 Z" fill="#FFD93D" stroke="#c8880a" stroke-width="1.5"/>
+  <path d="M 70 36 L 73 26 L 66 34 Z" fill="#FFD93D" stroke="#c8880a" stroke-width="1.5"/>
+
+  <!-- Spikes on back -->
+  <path d="M 52 60 L 50 54 L 56 58 Z" fill="#FFD93D" stroke="#c8880a" stroke-width="1"/>
+  <path d="M 60 58 L 60 52 L 64 58 Z" fill="#FFD93D" stroke="#c8880a" stroke-width="1"/>
+
+  <!-- Eyes (big and cute) -->
+  <ellipse cx="53" cy="46" rx="5" ry="5.5" fill="white"/>
+  <ellipse cx="67" cy="46" rx="5" ry="5.5" fill="white"/>
+  <circle cx="54" cy="47" r="3" fill="#1a3a10"/>
+  <circle cx="68" cy="47" r="3" fill="#1a3a10"/>
+  <circle cx="55" cy="46" r="1.2" fill="white"/>
+  <circle cx="69" cy="46" r="1.2" fill="white"/>
+
+  <!-- Nostrils -->
+  <circle cx="57" cy="55" r="1.2" fill="#1a3a10"/>
+  <circle cx="63" cy="55" r="1.2" fill="#1a3a10"/>
+
+  <!-- Tiny smile -->
+  <path d="M 55 60 Q 60 63 65 60" fill="none" stroke="#1a3a10" stroke-width="1.5" stroke-linecap="round"/>
+
+  <!-- Fire breath -->
+  <path d="M 50 56 Q 35 60 25 55 Q 30 62 22 68 Q 32 68 28 76 Q 38 70 45 72 Q 48 65 50 58 Z"
+    fill="#FF6B9D" stroke="#8a1040" stroke-width="1.5" opacity=".9"/>
+  <path d="M 32 60 Q 28 64 25 62 Q 28 66 26 70 Q 32 67 35 65 Z"
+    fill="#FFD93D" stroke="#c8880a" stroke-width="1"/>
+
+  <!-- Tail -->
+  <path d="M 86 80 Q 100 85 102 95 L 96 95 Q 98 88 88 84 Z"
+    fill="#6BFFB8" stroke="#1a6a46" stroke-width="2" stroke-linejoin="round"/>
+</svg>
+        <span>Сложный</span>
+        <small>до 10 · вычитание · 1 мин</small>
+      </button>
+
+      <!-- Рисование — карандаш -->
+      <button class="diff-btn" data-diff="drawing">
+        <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+          <rect x="4" y="4" width="112" height="112" rx="28" fill="#C3B1E1" stroke="#5a3e8a" stroke-width="3"/>
+          <rect x="12" y="12" width="40" height="18" rx="9" fill="rgba(255,255,255,.35)"/>
+          <rect x="50" y="25" width="20" height="55" rx="4" fill="#FFD93D" stroke="#c8880a" stroke-width="2"/>
+          <rect x="50" y="25" width="20" height="10" rx="4" fill="#FF6B9D" stroke="#8a1040" stroke-width="2"/>
+          <path d="M50,80 L60,100 L70,80 Z" fill="#d4956a" stroke="#a0632a" stroke-width="2"/>
+          <path d="M55,88 L60,100 L65,88 Z" fill="#555"/>
+          <line x1="50" y1="42" x2="70" y2="42" stroke="#c8880a" stroke-width="1" opacity=".4"/>
+          <line x1="50" y1="50" x2="70" y2="50" stroke="#c8880a" stroke-width="1" opacity=".4"/>
+          <path d="M22,88 Q30,76 40,84 Q50,92 58,72" fill="none" stroke="#7d5db5" stroke-width="3" stroke-linecap="round"/>
+        </svg>
+        <span>Рисование</span>
+        <small>нарисуй ответ · без таймера</small>
+      </button>
+
+    </div>
+  </div>
+</div>
+
+<!-- ══ GAME ══ -->
+<div id="game-screen" class="screen hidden">
+  <div id="app">
+    <h1 class="title-sm">Считай и играй</h1>
+    <div class="scorebar">
+      <div class="pill">Счёт: <span id="score-val">0</span></div>
+      <div class="pill">Вопрос: <span id="q-num">1</span>/10</div>
+    </div>
+    <div id="timer-track"><div id="timer-bar"></div></div>
+    <div class="card">
+      <div class="q-text" id="q-text">Загрузка…</div>
+      <svg id="obj-svg" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+    <div id="answers" class="answers"></div>
+    <div id="draw-wrap" class="draw-wrap" style="display:none">
+      <div id="drawing-pad-container" class="drawing-pad-container"></div>
+      <div class="draw-controls">
+        <button id="draw-check-btn" class="btn-mint">&#10003; Проверить</button>
+        <button id="draw-clear-btn" class="btn-ghost">&#10005; Стереть</button>
+      </div>
+    </div>
+    <div id="feedback" class="feedback"></div>
+    <button id="next-btn" class="next-btn">Дальше</button>
+    <p class="scroll-hint">прокрути или нажми кнопку</p>
+  </div>
+</div>
+
+<!-- ══ COMPLETE ══ -->
+<div id="complete-screen" class="screen hidden">
+  <div class="complete-content">
+    <svg viewBox="0 0 160 160" class="trophy-svg" xmlns="http://www.w3.org/2000/svg">
+      <!-- Glowing background -->
+      <circle cx="80" cy="80" r="72" fill="#FFD93D" opacity=".25">
+        <animate attributeName="r" values="72;82;72" dur="1.4s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="80" cy="80" r="60" fill="#FFD93D" opacity=".4">
+        <animate attributeName="r" values="60;68;60" dur="1.4s" repeatCount="indefinite"/>
+      </circle>
+
+      <!-- Trophy cup -->
+      <!-- Handles -->
+      <path d="M 38,60 Q 22,60 22,80 Q 22,100 42,100"
+            fill="none" stroke="#c8880a" stroke-width="6" stroke-linecap="round"/>
+      <path d="M 122,60 Q 138,60 138,80 Q 138,100 118,100"
+            fill="none" stroke="#c8880a" stroke-width="6" stroke-linecap="round"/>
+      <!-- Cup body -->
+      <path d="M 42,50 L 118,50 L 110,108 Q 108,118 80,118 Q 52,118 50,108 Z"
+            fill="#FFD93D" stroke="#8a5c00" stroke-width="3"/>
+      <!-- Shine -->
+      <ellipse cx="60" cy="70" rx="6" ry="14" fill="rgba(255,255,255,.5)"/>
+      <!-- Star on cup -->
+      <polygon points="80,72 84,82 95,82 86,89 89,100 80,93 71,100 74,89 65,82 76,82"
+              fill="#fff8c5" stroke="#c8880a" stroke-width="1.5"/>
+      <!-- Stem -->
+      <rect x="68" y="118" width="24" height="10" fill="#c8880a"/>
+      <!-- Base -->
+      <rect x="50" y="128" width="60" height="12" rx="3" fill="#8a5c00"/>
+    </svg>
+    <h2 class="complete-title">Молодец!</h2>
+    <p id="final-txt" class="final-txt"></p>
+    <div class="complete-btns">
+      <button id="restart-btn" class="btn-mint">Ещё раз</button>
+      <button id="newgame-btn" class="btn-yellow">Сменить уровень</button>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="/src/main.ts"></script>
+<!-- ══ LOADING OVERLAY (neural network training) ══ -->
+<div id="loading-overlay" class="loading-overlay hidden">
+  <div class="loading-content">
+    <svg viewBox="0 0 100 100" class="loading-brain" xmlns="http://www.w3.org/2000/svg">
+      <!-- Brain outline -->
+      <ellipse cx="50" cy="50" rx="38" ry="34" fill="none" stroke="#FFD93D" stroke-width="3"/>
+      <!-- Brain folds -->
+      <path d="M50,20 Q35,30 35,45 Q35,55 45,55 Q50,60 50,70"
+            fill="none" stroke="#FFD93D" stroke-width="2" opacity=".7"/>
+      <path d="M50,20 Q65,30 65,45 Q65,55 55,55 Q50,60 50,70"
+            fill="none" stroke="#FFD93D" stroke-width="2" opacity=".7"/>
+      <!-- Pulsing dots — neural activity -->
+      <circle cx="35" cy="40" r="3" fill="#6BFFB8">
+        <animate attributeName="opacity" values="0.3;1;0.3" dur="1.2s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="65" cy="40" r="3" fill="#FF6B9D">
+        <animate attributeName="opacity" values="1;0.3;1" dur="1.2s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="50" cy="55" r="3" fill="#C3B1E1">
+        <animate attributeName="opacity" values="0.3;1;0.3" dur="0.8s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="40" cy="65" r="3" fill="#FF8C69">
+        <animate attributeName="opacity" values="1;0.3;1" dur="1s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="60" cy="65" r="3" fill="#FFD93D">
+        <animate attributeName="opacity" values="0.3;1;0.3" dur="1.4s" repeatCount="indefinite"/>
+      </circle>
+    </svg>
+
+    <h2 class="loading-title">Подготавливаем нейросеть</h2>
+    <p id="loading-stage" class="loading-stage">Загрузка...</p>
+
+    <div class="loading-track">
+      <div id="loading-bar" class="loading-bar"></div>
+    </div>
+    <p id="loading-pct" class="loading-pct">0%</p>
+
+    <p class="loading-hint">
+      В первый раз нужно подождать ~30 секунд.<br/>
+      Потом модель сохранится в браузере и будет открываться мгновенно.
+    </p>
+  </div>
+</div>
+</body>
+</html>

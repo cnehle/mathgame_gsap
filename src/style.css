@@ -1,0 +1,437 @@
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@700;900&display=swap');
+
+:root {
+  --yellow: #FFD93D;
+  --pink:   #FF6B9D;
+  --mint:   #6BFFB8;
+  --coral:  #FF8C69;
+  --lav:    #C3B1E1;
+  --white:  #FFFDF4;
+  --dark:   #0f0c3a;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  width: 100%; height: 100%;
+  font-family: 'Nunito', sans-serif;
+  background: linear-gradient(150deg, #0f0c3a 0%, #1e1b6e 100%);
+  overflow: hidden;
+  cursor: none;
+}
+
+#bg-svg {
+  position: fixed; inset: 0;
+  width: 100%; height: 100%;
+  pointer-events: none; z-index: 0;
+}
+
+.screen {
+  position: fixed; inset: 0; z-index: 10;
+  display: flex; align-items: center; justify-content: center;
+  transition: opacity 0.4s, transform 0.4s;
+}
+.screen.hidden {
+  opacity: 0; pointer-events: none;
+  transform: scale(0.96);
+  display: none;
+}
+
+/* ════════ MENU ════════ */
+.menu-content {
+  display: flex; flex-direction: column;
+  align-items: center;
+  gap: clamp(10px, 2.5vh, 24px);
+  padding: 2vh 4vw;
+  position: relative;
+}
+
+.title {
+  font-family: 'Fredoka One', cursive;
+  font-size: clamp(1.8rem, 6vw, 3.5rem);
+  color: var(--yellow);
+  text-shadow: 0 3px 0 #8a5c00, 0 5px 18px rgba(0,0,0,.6);
+  text-align: center;
+  animation: titleDrop 0.7s cubic-bezier(.34,1.56,.64,1) both;
+}
+
+.subtitle {
+  font-family: 'Fredoka One', cursive;
+  font-size: clamp(1rem, 3vw, 1.6rem);
+  color: rgba(255,255,255,.75);
+  text-align: center;
+}
+
+.morph-decoration {
+  width: clamp(80px, 14vw, 120px);
+  height: clamp(80px, 14vw, 120px);
+  filter: drop-shadow(0 0 20px rgba(255,217,61,0.6));
+  animation: morphFloat 3s ease-in-out infinite;
+}
+
+.diff-grid {
+  display: flex; gap: clamp(8px, 2vw, 20px);
+  flex-wrap: wrap; justify-content: center;
+}
+
+.diff-btn {
+  background: rgba(255,255,255,.08);
+  border: 2px solid rgba(255,255,255,.2);
+  border-radius: 20px;
+  padding: clamp(8px, 1.5vw, 16px);
+  cursor: none;
+  display: flex; flex-direction: column;
+  align-items: center; gap: 6px;
+  color: var(--white);
+  transition: transform 0.2s cubic-bezier(.34,1.56,.64,1), box-shadow 0.2s, background 0.2s;
+  backdrop-filter: blur(8px);
+  width: clamp(110px, 22vw, 160px);
+}
+.diff-btn svg { width: 100%; height: auto; border-radius: 14px; }
+.diff-btn span {
+  font-family: 'Fredoka One', cursive;
+  font-size: clamp(.9rem, 2.2vw, 1.2rem);
+}
+.diff-btn small {
+  font-size: clamp(.6rem, 1.3vw, .8rem);
+  opacity: .75; text-align: center;
+}
+.diff-btn:hover {
+  background: rgba(255,255,255,.15);
+  box-shadow: 0 8px 32px rgba(0,0,0,.4);
+}
+
+/* ════════ GAME ════════ */
+#app {
+  position: relative; z-index: 1;
+  width: 100%; height: 100%;
+  display: flex; flex-direction: column;
+  align-items: center;
+  padding: 1vh 3vw; gap: 1vh;
+  overflow: hidden;
+}
+
+.title-sm {
+  font-family: 'Fredoka One', cursive;
+  font-size: clamp(1.1rem, 4vw, 2.2rem);
+  color: var(--yellow);
+  text-shadow: 0 3px 0 #8a5c00;
+  text-align: center; flex: 0 0 auto; line-height: 1;
+}
+
+.scorebar { display: flex; gap: clamp(6px, 2vw, 18px); flex: 0 0 auto; }
+.pill {
+  background: rgba(255,255,255,.12);
+  border: 2px solid rgba(255,255,255,.28);
+  border-radius: 50px; padding: .28em .9em;
+  color: var(--white);
+  font-size: clamp(.75rem, 2.2vw, 1.05rem); font-weight: 700;
+}
+.pill span { color: var(--yellow); font-family: 'Fredoka One', cursive; }
+
+#timer-track {
+  width: 100%; max-width: 680px;
+  height: 10px; background: rgba(255,255,255,.15);
+  border-radius: 10px; overflow: hidden;
+  flex: 0 0 auto; display: none;
+}
+#timer-bar {
+  height: 100%; width: 100%; background: var(--mint);
+  border-radius: 10px; transition: background 0.3s;
+}
+
+.card {
+  background: rgba(255,255,255,.10);
+  border: 3px solid rgba(255,255,255,.22);
+  border-radius: clamp(12px, 2.5vw, 24px);
+  padding: clamp(6px, 1.5vw, 14px);
+  width: 100%; max-width: 700px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 6px 36px rgba(0,0,0,.35);
+  display: flex; flex-direction: column;
+  align-items: center; gap: clamp(4px, 1vh, 10px);
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden; will-change: transform, opacity;
+}
+
+.q-text {
+  font-family: 'Fredoka One', cursive;
+  font-size: clamp(1rem, 3.5vw, 1.8rem);
+  color: var(--white); line-height: 1.2; text-align: center;
+}
+
+#obj-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.answers {
+  display: flex; flex-wrap: wrap;
+  gap: clamp(6px, 2vw, 14px);
+  justify-content: center;
+  width: 100%; max-width: 560px; flex: 0 0 auto;
+}
+.ans-btn {
+  background: none; border: none; cursor: none;
+  outline: none; padding: 0;
+  width: clamp(60px, 20vw, 110px);
+  height: clamp(60px, 20vw, 110px);
+  transition: transform 0.15s cubic-bezier(.34,1.56,.64,1), filter 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.ans-btn svg { width: 100%; height: 100%; display: block; }
+
+/* ── Drawing mode ── */
+.draw-wrap {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 10px;
+  width: 100%; max-width: 340px;
+  flex: 0 0 auto;
+}
+
+.drawing-pad-container {
+  width: clamp(200px, 60vw, 300px);
+  height: clamp(200px, 60vw, 300px);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 0 0 2px rgba(255,255,255,.2),
+              0 0 24px rgba(195,177,225,.3);
+}
+
+.draw-controls {
+  display: flex; gap: 12px;
+}
+
+.btn-ghost {
+  font-family: 'Fredoka One', cursive;
+  font-size: clamp(.85rem, 2.5vw, 1.1rem);
+  color: rgba(255,255,255,.8);
+  background: rgba(255,255,255,.1);
+  border: 2px solid rgba(255,255,255,.25);
+  border-radius: 50px;
+  padding: .45em 1.5em; cursor: none;
+  transition: background 0.2s;
+}
+.btn-ghost:hover { background: rgba(255,255,255,.2); }
+
+.feedback {
+  font-family: 'Fredoka One', cursive;
+  font-size: clamp(.95rem, 3.5vw, 1.9rem);
+  text-align: center; min-height: 1.4em; flex: 0 0 auto;
+}
+.feedback.correct { color: var(--mint); text-shadow: 0 0 18px var(--mint); }
+.feedback.wrong   { color: var(--pink); text-shadow: 0 0 18px var(--pink); }
+
+.next-btn {
+  font-family: 'Fredoka One', cursive;
+  font-size: clamp(.9rem, 3vw, 1.4rem);
+  color: var(--dark); background: var(--yellow);
+  border: none; border-radius: 50px;
+  padding: .45em 2em; cursor: none;
+  box-shadow: 0 4px 0 #8a5c00, 0 6px 16px rgba(0,0,0,.28);
+  transition: transform .1s, box-shadow .1s; flex: 0 0 auto;
+}
+.next-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #8a5c00; }
+
+.scroll-hint {
+  font-family: 'Fredoka One', cursive;
+  font-size: clamp(.7rem, 2vw, .95rem);
+  color: rgba(255,255,255,.35); text-align: center; flex: 0 0 auto;
+  animation: hintPulse 2s ease-in-out infinite;
+}
+
+/* ════════ COMPLETE ════════ */
+.complete-content {
+  display: flex; flex-direction: column;
+  align-items: center;
+  gap: clamp(8px, 2vh, 18px);
+  padding: 3vh 4vw;
+  max-height: 100vh; overflow-y: auto;
+}
+
+.trophy-svg { width: clamp(90px, 20vw, 140px); }
+
+.complete-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: clamp(2rem, 9vw, 4.5rem);
+  color: var(--yellow);
+  text-shadow: 0 4px 0 #8a5c00, 0 0 40px #ffcc00;
+  animation: bounce 0.6s infinite alternate;
+}
+
+.final-txt {
+  color: var(--white); font-size: clamp(.9rem, 3vw, 1.3rem);
+  font-weight: 700; text-align: center;
+}
+
+.complete-btns {
+  display: flex; gap: clamp(8px, 2vw, 16px);
+  flex-wrap: wrap; justify-content: center;
+}
+
+.btn-mint, .btn-yellow {
+  font-family: 'Fredoka One', cursive;
+  font-size: clamp(.9rem, 3vw, 1.4rem);
+  color: var(--dark); border: none;
+  border-radius: 50px; padding: .5em 2em; cursor: none;
+  transition: transform 0.15s cubic-bezier(.34,1.56,.64,1);
+}
+.btn-mint   { background: var(--mint);   box-shadow: 0 4px 0 #1a6a46; }
+.btn-yellow { background: var(--yellow); box-shadow: 0 4px 0 #8a5c00; }
+.btn-mint:active, .btn-yellow:active { transform: scale(.94); }
+
+/* ════════ SVG FIX ════════ */
+#obj-svg g g {
+  transform-box: fill-box;
+  transform-origin: center center;
+}
+
+/* ════════ KEYFRAMES ════════ */
+@keyframes bounce       { to { transform: translateY(-14px); } }
+@keyframes floatY       { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
+@keyframes popIn        { 0%{transform:scale(0) rotate(-20deg);opacity:0} 65%{transform:scale(1.15) rotate(4deg);opacity:1} 100%{transform:scale(1) rotate(0);opacity:1} }
+@keyframes celebrate    { 0%{opacity:1;transform:translateY(0) scale(1)} 100%{opacity:0;transform:translateY(-80px) scale(.7)} }
+@keyframes correctPulse { from{transform:scale(1)} to{transform:scale(1.12)} }
+@keyframes titleDrop    { 0%{transform:translateY(-30px);opacity:0} 100%{transform:translateY(0);opacity:1} }
+@keyframes hintPulse    { 0%,100%{opacity:.35} 50%{opacity:.7} }
+@keyframes morphFloat   { 0%,100%{transform:translateY(0) rotate(0deg)} 50%{transform:translateY(-8px) rotate(5deg)} }
+@keyframes drawSuccess  { 0%{transform:scale(1)} 50%{transform:scale(1.08)} 100%{transform:scale(1)} }
+@keyframes drawShake {
+  0%,100%{transform:translateX(0)}
+  20%{transform:translateX(-8px)}
+  40%{transform:translateX(8px)}
+  60%{transform:translateX(-5px)}
+  80%{transform:translateX(5px)}
+}
+
+/* ════════ LOADING OVERLAY ════════ */
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(10, 8, 45, 0.92);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.4s;
+}
+.loading-overlay.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.loading-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(10px, 2.5vh, 20px);
+  padding: 4vh 6vw;
+  max-width: 480px;
+  text-align: center;
+}
+
+.loading-brain {
+  width: clamp(80px, 18vw, 130px);
+  height: clamp(80px, 18vw, 130px);
+  filter: drop-shadow(0 0 24px rgba(255, 217, 61, 0.5));
+  animation: brainPulse 2s ease-in-out infinite;
+}
+
+.loading-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: clamp(1.3rem, 4.5vw, 2rem);
+  color: var(--yellow);
+  text-shadow: 0 3px 0 #8a5c00;
+}
+
+.loading-stage {
+  font-family: 'Fredoka One', cursive;
+  font-size: clamp(0.9rem, 2.8vw, 1.2rem);
+  color: var(--white);
+  opacity: 0.85;
+}
+
+.loading-track {
+  width: clamp(220px, 60vw, 360px);
+  height: 12px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.loading-bar {
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, #6BFFB8, #FFD93D);
+  border-radius: 12px;
+  transition: width 0.3s ease-out;
+  box-shadow: 0 0 12px rgba(107, 255, 184, 0.6);
+}
+
+.loading-pct {
+  font-family: 'Fredoka One', cursive;
+  font-size: clamp(1rem, 3vw, 1.3rem);
+  color: var(--mint);
+}
+
+.loading-hint {
+  font-size: clamp(0.7rem, 2vw, 0.85rem);
+  color: rgba(255, 255, 255, 0.55);
+  line-height: 1.4;
+  margin-top: clamp(4px, 1vh, 10px);
+}
+
+@keyframes brainPulse {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.06); }
+}
+
+/* ════════ DRAWING MODE — strict fit ════════ */
+
+#app {
+  max-height: 100vh;
+  overflow: hidden;
+}
+
+/* Drawing pad — hard size limits */
+.drawing-pad-container {
+  width: 200px;
+  height: 200px;
+  flex-shrink: 0;
+}
+
+/* Drawing wrap shrinks freely */
+.draw-wrap {
+  flex-shrink: 0;
+}
+
+/* When in drawing mode — shrink the question card SVG */
+#game-screen:has(#draw-wrap:not([style*="display: none"])) #obj-svg {
+  max-height: 22vh;
+}
+
+#game-screen:has(#draw-wrap:not([style*="display: none"])) .card {
+  flex: 0 1 auto;
+}
+
+/* Hide scroll hint in drawing mode */
+#game-screen:has(#draw-wrap:not([style*="display: none"])) .scroll-hint {
+  display: none;
+}
+
+/* Force Fredoka everywhere a chunky kid-friendly font is needed */
+.title, .subtitle, .title-sm, .q-text, .feedback,
+.complete-title, .final-txt, .diff-btn span, .next-btn,
+.btn-mint, .btn-yellow, .btn-ghost, .scroll-hint,
+.loading-title, .loading-stage, .loading-pct, .pill span {
+  font-family: 'Fredoka', 'Fredoka One', system-ui, sans-serif !important;
+  font-weight: 600;
+  font-style: normal !important;
+}

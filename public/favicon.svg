@@ -1,0 +1,27 @@
+<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="32" cy="32" r="30" fill="#1e1b6e"/>
+  <circle cx="32" cy="32" r="28" fill="#2a277a"/>
+
+  <!-- Digit 1 -->
+  <text x="10" y="44"
+    font-family="Fredoka One, Arial Rounded MT Bold, sans-serif"
+    font-size="28" font-weight="bold"
+    fill="#FFD93D">1</text>
+
+  <!-- Digit 2 -->
+  <text x="24" y="44"
+    font-family="Fredoka One, Arial Rounded MT Bold, sans-serif"
+    font-size="28" font-weight="bold"
+    fill="#6BFFB8">2</text>
+
+  <!-- Digit 3 -->
+  <text x="40" y="44"
+    font-family="Fredoka One, Arial Rounded MT Bold, sans-serif"
+    font-size="28" font-weight="bold"
+    fill="#FF6B9D">3</text>
+
+  <!-- Small star decoration -->
+  <polygon points="32,4 33.5,8.5 38,8.5 34.5,11 35.8,15.5 32,13 28.2,15.5 29.5,11 26,8.5 30.5,8.5"
+    fill="#FFD93D" opacity=".9"/>
+</svg>
