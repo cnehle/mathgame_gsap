@@ -537,3 +537,13 @@ html, body {
 .perf-results:empty {
   display: none;
 }
+
+/* Restore native cursor inside performance panel */
+.perf-panel,
+.perf-panel * {
+  cursor: auto !important;
+}
+
+.perf-panel button {
+  cursor: pointer !important;
+}
