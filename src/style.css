@@ -52,7 +52,6 @@ html, body {
   color: var(--yellow);
   text-shadow: 0 3px 0 #8a5c00, 0 5px 18px rgba(0,0,0,.6);
   text-align: center;
-  animation: titleDrop 0.7s cubic-bezier(.34,1.56,.64,1) both;
 }
 
 .subtitle {
@@ -66,7 +65,6 @@ html, body {
   width: clamp(80px, 14vw, 120px);
   height: clamp(80px, 14vw, 120px);
   filter: drop-shadow(0 0 20px rgba(255,217,61,0.6));
-  animation: morphFloat 3s ease-in-out infinite;
 }
 
 .diff-grid {
@@ -242,7 +240,6 @@ html, body {
   font-family: 'Fredoka One', cursive;
   font-size: clamp(.7rem, 2vw, .95rem);
   color: rgba(255,255,255,.35); text-align: center; flex: 0 0 auto;
-  animation: hintPulse 2s ease-in-out infinite;
 }
 
 /* ════════ COMPLETE ════════ */
@@ -261,7 +258,6 @@ html, body {
   font-size: clamp(2rem, 9vw, 4.5rem);
   color: var(--yellow);
   text-shadow: 0 4px 0 #8a5c00, 0 0 40px #ffcc00;
-  animation: bounce 0.6s infinite alternate;
 }
 
 .final-txt {
@@ -284,30 +280,6 @@ html, body {
 .btn-mint   { background: var(--mint);   box-shadow: 0 4px 0 #1a6a46; }
 .btn-yellow { background: var(--yellow); box-shadow: 0 4px 0 #8a5c00; }
 .btn-mint:active, .btn-yellow:active { transform: scale(.94); }
-
-/* ════════ SVG FIX ════════ */
-#obj-svg g g {
-  transform-box: fill-box;
-  transform-origin: center center;
-}
-
-/* ════════ KEYFRAMES ════════ */
-@keyframes bounce       { to { transform: translateY(-14px); } }
-@keyframes floatY       { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
-@keyframes popIn        { 0%{transform:scale(0) rotate(-20deg);opacity:0} 65%{transform:scale(1.15) rotate(4deg);opacity:1} 100%{transform:scale(1) rotate(0);opacity:1} }
-@keyframes celebrate    { 0%{opacity:1;transform:translateY(0) scale(1)} 100%{opacity:0;transform:translateY(-80px) scale(.7)} }
-@keyframes correctPulse { from{transform:scale(1)} to{transform:scale(1.12)} }
-@keyframes titleDrop    { 0%{transform:translateY(-30px);opacity:0} 100%{transform:translateY(0);opacity:1} }
-@keyframes hintPulse    { 0%,100%{opacity:.35} 50%{opacity:.7} }
-@keyframes morphFloat   { 0%,100%{transform:translateY(0) rotate(0deg)} 50%{transform:translateY(-8px) rotate(5deg)} }
-@keyframes drawSuccess  { 0%{transform:scale(1)} 50%{transform:scale(1.08)} 100%{transform:scale(1)} }
-@keyframes drawShake {
-  0%,100%{transform:translateX(0)}
-  20%{transform:translateX(-8px)}
-  40%{transform:translateX(8px)}
-  60%{transform:translateX(-5px)}
-  80%{transform:translateX(5px)}
-}
 
 /* ════════ LOADING OVERLAY ════════ */
 .loading-overlay {
@@ -340,7 +312,6 @@ html, body {
   width: clamp(80px, 18vw, 130px);
   height: clamp(80px, 18vw, 130px);
   filter: drop-shadow(0 0 24px rgba(255, 217, 61, 0.5));
-  animation: brainPulse 2s ease-in-out infinite;
 }
 
 .loading-title {
@@ -388,11 +359,6 @@ html, body {
   margin-top: clamp(4px, 1vh, 10px);
 }
 
-@keyframes brainPulse {
-  0%, 100% { transform: scale(1); }
-  50%      { transform: scale(1.06); }
-}
-
 /* ════════ DRAWING MODE — strict fit ════════ */
 
 #app {
@@ -434,4 +400,27 @@ html, body {
   font-family: 'Fredoka', 'Fredoka One', system-ui, sans-serif !important;
   font-weight: 600;
   font-style: normal !important;
+}
+
+/* ════════ VERSION BADGE ════════ */
+.version-badge {
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  z-index: 200;
+  font-family: 'Fredoka One', 'Fredoka', sans-serif;
+  font-size: 0.75rem;
+  color: var(--white);
+  background: rgba(106, 92, 231, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 50px;
+  padding: 4px 12px;
+  pointer-events: none;
+  letter-spacing: 0.5px;
+  backdrop-filter: blur(8px);
+}
+
+/* Fix for SVG icons inside diff buttons — they get warped by GSAP otherwise */
+.diff-btn svg, .diff-btn svg * {
+  transform-box: view-box;
 }

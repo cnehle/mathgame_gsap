@@ -69,15 +69,27 @@ export function celebrate(svgEl: SVGSVGElement): void {
   const stars = svgEl.querySelectorAll<SVGPolygonElement>('polygon');
 
   stars.forEach((star, i) => {
+    // Get current position from transform attribute
+    const transform = star.getAttribute('transform') ?? '';
+    const match = transform.match(/translate\(([^,]+),([^)]+)\)/);
+    const startX = match ? parseFloat(match[1]) : 0;
+    const startY = match ? parseFloat(match[2]) : 0;
+
+    // Random direction outward
+    const angle = Math.random() * Math.PI * 2;
+    const distance = 80 + Math.random() * 60;
+    const endX = startX + Math.cos(angle) * distance;
+    const endY = startY + Math.sin(angle) * distance - 20;
+
+    // Animate by directly updating the transform attribute
     gsap.fromTo(
       star,
-      { y: 0, scale: 1, opacity: 1 },
+      { attr: { transform: `translate(${startX},${startY})` }, opacity: 1 },
       {
-        y: -80 - Math.random() * 30,
-        scale: 0.7,
+        attr: { transform: `translate(${endX},${endY})` },
         opacity: 0,
-        duration: 0.7 + Math.random() * 0.6,
-        delay: i * 0.06,
+        duration: 0.9 + Math.random() * 0.5,
+        delay: i * 0.04,
         ease: 'power2.out',
       }
     );

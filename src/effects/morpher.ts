@@ -1,3 +1,14 @@
+import { gsap } from 'gsap';
+
+// ─────────────────────────────────────────────────────────────
+//  SVG Morpher — GSAP version
+//
+//  Interpolates a path between predefined shapes by tweening
+//  numeric coordinates through GSAP's optimized animation engine.
+//  All easing and timing is delegated to GSAP rather than
+//  managed manually with requestAnimationFrame.
+// ─────────────────────────────────────────────────────────────
+
 interface MorphShape {
   name: string;
   points: Array<[number, number]>;
@@ -37,10 +48,10 @@ const SHAPES: MorphShape[] = [
     name: 'flower',
     fill: '#FF8C69', stroke: '#c24d1e',
     points: [
-      [50,15],[58,30],[72,22],[65,36],[82,38],
-      [70,48],[78,62],[62,58],[58,75],[50,63],
-      [42,75],[38,58],[22,62],[30,48],[18,38],
-      [35,36],
+      [50,10], [58,30], [70,22], [70,42],
+      [88,50], [70,58], [70,78], [58,70],
+      [50,90], [42,70], [30,78], [30,58],
+      [12,50], [30,42], [30,22], [42,30],
     ],
   },
   {
@@ -56,43 +67,22 @@ const SHAPES: MorphShape[] = [
     name: 'cloud',
     fill: '#a29bfe', stroke: '#6c5ce7',
     points: [
-      [30,65],[18,65],[10,57],[10,48],[18,40],
-      [22,40],[25,33],[33,28],[42,28],[48,33],
-      [52,28],[62,26],[72,30],[76,40],[80,40],
-      [88,48],
+      [25,60], [18,55], [12,48], [15,40], [22,35],
+      [28,32], [32,28], [40,25], [48,28], [55,25],
+      [62,28], [70,32], [78,38], [82,48], [78,58],
+      [68,62],
     ],
   },
 ];
-
-function lerp(a: number, b: number, t: number): number {
-  return a + (b - a) * t;
-}
-
-function easeInOut(t: number): number {
-  return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
-}
 
 function pointsToPath(pts: Array<[number, number]>): string {
   return pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p[0]},${p[1]}`).join(' ') + ' Z';
 }
 
-function lerpColor(a: string, b: string, t: number): string {
-  const ar = parseInt(a.slice(1, 3), 16);
-  const ag = parseInt(a.slice(3, 5), 16);
-  const ab = parseInt(a.slice(5, 7), 16);
-  const br = parseInt(b.slice(1, 3), 16);
-  const bg = parseInt(b.slice(3, 5), 16);
-  const bb = parseInt(b.slice(5, 7), 16);
-  const r = Math.round(lerp(ar, br, t)).toString(16).padStart(2, '0');
-  const g = Math.round(lerp(ag, bg, t)).toString(16).padStart(2, '0');
-  const bl = Math.round(lerp(ab, bb, t)).toString(16).padStart(2, '0');
-  return `#${r}${g}${bl}`;
-}
-
 export class SVGMorpher {
   private pathEl: SVGPathElement;
   private currentShapeIdx = 0;
-  private rafId = 0;
+  private activeTween: gsap.core.Tween | null = null;
 
   constructor(svgEl: SVGSVGElement) {
     const ns = 'http://www.w3.org/2000/svg';
@@ -113,8 +103,9 @@ export class SVGMorpher {
   }
 
   async morphToRandom(): Promise<void> {
-    const nextIdx = (this.currentShapeIdx + 1 +
-      Math.floor(Math.random() * (SHAPES.length - 1))) % SHAPES.length;
+    const nextIdx =
+      (this.currentShapeIdx + 1 + Math.floor(Math.random() * (SHAPES.length - 1))) %
+      SHAPES.length;
     await this.morphTo(nextIdx);
     this.currentShapeIdx = nextIdx;
   }
@@ -123,36 +114,65 @@ export class SVGMorpher {
     return new Promise((resolve) => {
       const from = SHAPES[this.currentShapeIdx];
       const to = SHAPES[targetIdx];
-      const duration = 600;
-      const start = performance.now();
 
-      cancelAnimationFrame(this.rafId);
-
-      const tick = (now: number): void => {
-        const t = Math.min((now - start) / duration, 1);
-        const e = easeInOut(t);
-
-        const interpolated: Array<[number, number]> = from.points.map((fp, i) => [
-          lerp(fp[0], to.points[i][0], e),
-          lerp(fp[1], to.points[i][1], e),
-        ]);
-
-        this.pathEl.setAttribute('d', pointsToPath(interpolated));
-        this.pathEl.setAttribute('fill', lerpColor(from.fill, to.fill, e));
-        this.pathEl.setAttribute('stroke', lerpColor(from.stroke, to.stroke, e));
-
-        if (t < 1) {
-          this.rafId = requestAnimationFrame(tick);
-        } else {
-          resolve();
-        }
+      // Build an object whose properties GSAP will interpolate.
+      // Each x/y coordinate becomes a numeric property to tween.
+      const state: Record<string, number> = {
+        fillR: parseInt(from.fill.slice(1, 3), 16),
+        fillG: parseInt(from.fill.slice(3, 5), 16),
+        fillB: parseInt(from.fill.slice(5, 7), 16),
+        strokeR: parseInt(from.stroke.slice(1, 3), 16),
+        strokeG: parseInt(from.stroke.slice(3, 5), 16),
+        strokeB: parseInt(from.stroke.slice(5, 7), 16),
       };
+      from.points.forEach((p, i) => {
+        state[`x${i}`] = p[0];
+        state[`y${i}`] = p[1];
+      });
 
-      this.rafId = requestAnimationFrame(tick);
+      // Target values for the tween
+      const target: Record<string, number> = {
+        fillR: parseInt(to.fill.slice(1, 3), 16),
+        fillG: parseInt(to.fill.slice(3, 5), 16),
+        fillB: parseInt(to.fill.slice(5, 7), 16),
+        strokeR: parseInt(to.stroke.slice(1, 3), 16),
+        strokeG: parseInt(to.stroke.slice(3, 5), 16),
+        strokeB: parseInt(to.stroke.slice(5, 7), 16),
+      };
+      to.points.forEach((p, i) => {
+        target[`x${i}`] = p[0];
+        target[`y${i}`] = p[1];
+      });
+
+      // Kill any previous morph
+      this.activeTween?.kill();
+
+      this.activeTween = gsap.to(state, {
+        ...target,
+        duration: 0.6,
+        ease: 'power2.inOut',
+        onUpdate: () => {
+          // Rebuild the path "d" attribute from current state
+          const pts: Array<[number, number]> = [];
+          for (let i = 0; i < from.points.length; i++) {
+            pts.push([state[`x${i}`], state[`y${i}`]]);
+          }
+          this.pathEl.setAttribute('d', pointsToPath(pts));
+
+          // Rebuild colors from current channel values
+          const fill = `rgb(${Math.round(state.fillR)},${Math.round(state.fillG)},${Math.round(state.fillB)})`;
+          const stroke = `rgb(${Math.round(state.strokeR)},${Math.round(state.strokeG)},${Math.round(state.strokeB)})`;
+          this.pathEl.setAttribute('fill', fill);
+          this.pathEl.setAttribute('stroke', stroke);
+        },
+        onComplete: () => {
+          resolve();
+        },
+      });
     });
   }
 
   destroy(): void {
-    cancelAnimationFrame(this.rafId);
+    this.activeTween?.kill();
   }
 }

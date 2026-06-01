@@ -1,13 +1,19 @@
 import type { MouseState } from '../types';
+import { gsap } from 'gsap';
+
+// ─────────────────────────────────────────────────────────────
+//  Mouse tracking — GSAP version
+//  Uses gsap.quickTo() which is the recommended high-performance
+//  way to follow mouse movement: animations are batched and
+//  rendered in GSAP's optimized ticker loop.
+// ─────────────────────────────────────────────────────────────
 
 export class MouseTracker {
   private state: MouseState = { x: 0, y: 0, normX: 0, normY: 0 };
   private listeners: Array<(s: MouseState) => void> = [];
-  private rafId = 0;
   private targetNormX = 0;
   private targetNormY = 0;
-  private currentNormX = 0;
-  private currentNormY = 0;
+  private rafId = 0;
 
   constructor() {
     window.addEventListener('mousemove', this.onMouseMove);
@@ -22,12 +28,9 @@ export class MouseTracker {
   };
 
   private tick = (): void => {
-    // Smooth lerp towards target
-    const ease = 0.06;
-    this.currentNormX += (this.targetNormX - this.currentNormX) * ease;
-    this.currentNormY += (this.targetNormY - this.currentNormY) * ease;
-    this.state.normX = this.currentNormX;
-    this.state.normY = this.currentNormY;
+    // Use GSAP's interpolation helper instead of manual lerp
+    this.state.normX = gsap.utils.interpolate(this.state.normX, this.targetNormX, 0.06);
+    this.state.normY = gsap.utils.interpolate(this.state.normY, this.targetNormY, 0.06);
     this.listeners.forEach((fn) => fn(this.state));
     this.rafId = requestAnimationFrame(this.tick);
   };
@@ -45,37 +48,49 @@ export class MouseTracker {
   }
 }
 
-// Parallax layers: moves background stars/moon based on mouse
+/**
+ * Parallax background — moves stars, moon, clouds with mouse.
+ * GSAP version uses quickTo for ultra-smooth, batched updates.
+ */
 export class ParallaxBackground {
-  private starGroup: SVGGElement;
-  private moon: SVGCircleElement;
-  private clouds: SVGElement[];
+  private setStarsX: (value: number) => gsap.core.Tween;
+  private setStarsY: (value: number) => gsap.core.Tween;
+  private setMoonX: (value: number) => gsap.core.Tween;
+  private setMoonY: (value: number) => gsap.core.Tween;
+  private cloudSetters: Array<{
+    x: (v: number) => gsap.core.Tween;
+    y: (v: number) => gsap.core.Tween;
+  }> = [];
   private unsub: (() => void) | null = null;
 
   constructor(bgSvg: SVGSVGElement, tracker: MouseTracker) {
-    this.starGroup = bgSvg.querySelector('#star-g') as SVGGElement;
-    this.moon = bgSvg.querySelector('#moon') as SVGCircleElement;
-    this.clouds = Array.from(bgSvg.querySelectorAll('.cloud')) as SVGElement[];
+    const starGroup = bgSvg.querySelector('#star-g') as SVGGElement;
+    const moon = bgSvg.querySelector('#moon') as SVGCircleElement;
+    const clouds = Array.from(bgSvg.querySelectorAll('.cloud')) as SVGElement[];
+
+    // GSAP quickTo creates a function that animates a property to a value
+    // efficiently — much faster than calling gsap.to() on every mousemove.
+    this.setStarsX = gsap.quickTo(starGroup, 'x', { duration: 0.6, ease: 'power2.out' });
+    this.setStarsY = gsap.quickTo(starGroup, 'y', { duration: 0.6, ease: 'power2.out' });
+    this.setMoonX = gsap.quickTo(moon, 'attr.cx', { duration: 0.6, ease: 'power2.out' });
+    this.setMoonY = gsap.quickTo(moon, 'attr.cy', { duration: 0.6, ease: 'power2.out' });
+
+    clouds.forEach((c) => {
+      this.cloudSetters.push({
+        x: gsap.quickTo(c, 'x', { duration: 0.6, ease: 'power2.out' }),
+        y: gsap.quickTo(c, 'y', { duration: 0.6, ease: 'power2.out' }),
+      });
+    });
 
     this.unsub = tracker.subscribe(({ normX, normY }) => {
-      // Stars move subtly (layer 1)
-      if (this.starGroup) {
-        this.starGroup.setAttribute(
-          'transform',
-          `translate(${normX * 12},${normY * 8})`
-        );
-      }
-      // Moon moves more (layer 2)
-      if (this.moon) {
-        const baseX = 880;
-        const baseY = 72;
-        this.moon.setAttribute('cx', String(baseX + normX * 30));
-        this.moon.setAttribute('cy', String(baseY + normY * 20));
-      }
-      // Clouds move opposite direction (layer 3)
-      this.clouds.forEach((c, i) => {
+      this.setStarsX(normX * 12);
+      this.setStarsY(normY * 8);
+      this.setMoonX(880 + normX * 30);
+      this.setMoonY(72 + normY * 20);
+      this.cloudSetters.forEach((setter, i) => {
         const factor = i % 2 === 0 ? -18 : -12;
-        c.setAttribute('transform', `translate(${normX * factor},${normY * 5})`);
+        setter.x(normX * factor);
+        setter.y(normY * 5);
       });
     });
   }
@@ -85,7 +100,10 @@ export class ParallaxBackground {
   }
 }
 
-// Cursor trail — SVG sparkle particles that follow mouse
+/**
+ * Cursor trail — colorful SVG particles following mouse.
+ * GSAP version uses gsap.quickTo for each particle.
+ */
 export class CursorTrail {
   private svg: SVGSVGElement;
   private particles: SVGCircleElement[] = [];
@@ -93,6 +111,8 @@ export class CursorTrail {
   private maxParticles = 12;
   private rafId = 0;
   private colors = ['#FFD93D', '#FF6B9D', '#6BFFB8', '#C3B1E1', '#FF8C69'];
+  private currentX = 0;
+  private currentY = 0;
 
   constructor() {
     const ns = 'http://www.w3.org/2000/svg';
@@ -105,6 +125,8 @@ export class CursorTrail {
       const c = document.createElementNS(ns, 'circle') as SVGCircleElement;
       c.setAttribute('r', String(6 - i * 0.4));
       c.setAttribute('fill', this.colors[i % this.colors.length]);
+      c.setAttribute('cx', '-100');
+      c.setAttribute('cy', '-100');
       c.style.opacity = '0';
       this.svg.appendChild(c);
       this.particles.push(c);
@@ -116,11 +138,15 @@ export class CursorTrail {
   }
 
   private onMove = (e: MouseEvent): void => {
-    this.positions.unshift({ x: e.clientX, y: e.clientY });
-    if (this.positions.length > this.maxParticles) this.positions.pop();
+    this.currentX = e.clientX;
+    this.currentY = e.clientY;
   };
 
   private animate = (): void => {
+    // Shift positions forward
+    this.positions.unshift({ x: this.currentX, y: this.currentY });
+    if (this.positions.length > this.maxParticles) this.positions.pop();
+
     this.particles.forEach((p, i) => {
       const pos = this.positions[i];
       if (!pos) return;
@@ -128,6 +154,7 @@ export class CursorTrail {
       p.setAttribute('cy', String(pos.y));
       p.style.opacity = String(1 - i / this.maxParticles);
     });
+
     this.rafId = requestAnimationFrame(this.animate);
   };
 

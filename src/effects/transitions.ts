@@ -1,3 +1,6 @@
+import { gsap } from 'gsap';
+import { transitionCard } from './animations';
+
 // Scroll-based slide transition between questions
 export class ScrollTransition {
   private container: HTMLElement;
@@ -45,25 +48,8 @@ export class ScrollTransition {
     if (this.isAnimating) return;
     this.isAnimating = true;
 
-    this.container.style.transition = 'transform 0.35s cubic-bezier(.4,0,.2,1), opacity 0.35s';
-    this.container.style.transform = 'translateY(-40px)';
-    this.container.style.opacity = '0';
+    await transitionCard(this.container, onMidpoint);
 
-    await delay(350);
-    onMidpoint();
-
-    this.container.style.transition = 'none';
-    this.container.style.transform = 'translateY(40px)';
-    this.container.style.opacity = '0';
-
-    // Force reflow
-    void this.container.offsetHeight;
-
-    this.container.style.transition = 'transform 0.4s cubic-bezier(.34,1.2,.64,1), opacity 0.4s';
-    this.container.style.transform = 'translateY(0)';
-    this.container.style.opacity = '1';
-
-    await delay(400);
     this.isAnimating = false;
   }
 
@@ -75,46 +61,47 @@ export class ScrollTransition {
 }
 
 // Celebration burst — SVG emoji particles
+import { celebrate as gsapCelebrate } from './animations';
+
 export function spawnCelebration(): void {
   const ns = 'http://www.w3.org/2000/svg';
   const svg = document.createElementNS(ns, 'svg') as SVGSVGElement;
-  svg.setAttribute('viewBox', '0 0 400 200');
+  svg.setAttribute('viewBox', '0 0 500 300');
   svg.style.cssText =
-    'position:fixed;top:20%;left:50%;transform:translateX(-50%);pointer-events:none;z-index:50;width:min(400px,90vw);';
+  'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;z-index:9999;width:min(500px,90vw);height:min(300px,40vh);';
 
-    // SVG star particles instead of emoji
-  const starColors = ['#FFD93D', '#FF6B9D', '#6BFFB8', '#C3B1E1', '#FF8C69'];
+  const colors = ['#FFD93D', '#FF6B9D', '#6BFFB8', '#C3B1E1', '#FF8C69'];
+
   for (let i = 0; i < 14; i++) {
     const star = document.createElementNS(ns, 'polygon');
-    const cx = rand(30, 370);
-    const cy = rand(40, 160);
-    const size = rand(8, 16);
-    // 5-pointed star around (cx, cy)
-    const points: string[] = [];
-    for (let k = 0; k < 10; k++) {
-      const angle = (Math.PI / 5) * k - Math.PI / 2;
-      const r = k % 2 === 0 ? size : size * 0.45;
-      points.push(`${cx + Math.cos(angle) * r},${cy + Math.sin(angle) * r}`);
-    }
-    star.setAttribute('points', points.join(' '));
-    star.setAttribute('fill', starColors[i % starColors.length]);
-    star.setAttribute('opacity', '0.9');
-    star.style.cssText = `animation:celebrate ${rand(7, 13) / 10}s ${(i * 0.06).toFixed(2)}s ease-out both;`;
+    const cx = rand(40, 380);
+    const cy = rand(50, 160);
+    const size = rand(8, 18);
+    const color = colors[i % colors.length];
+
+    star.setAttribute(
+      'points',
+      `0,${-size} ${size * 0.3},${-size * 0.3} ${size},${-size * 0.3} ` +
+      `${size * 0.5},${size * 0.2} ${size * 0.7},${size * 0.9} ` +
+      `0,${size * 0.4} ${-size * 0.7},${size * 0.9} ` +
+      `${-size * 0.5},${size * 0.2} ${-size},${-size * 0.3} ${-size * 0.3},${-size * 0.3}`
+    );
+    star.setAttribute('fill', color);
+    star.setAttribute('transform', `translate(${cx},${cy})`);
     svg.appendChild(star);
   }
 
   document.body.appendChild(svg);
+  // Trigger GSAP animation on all the stars at once
+  gsapCelebrate(svg);
   setTimeout(() => svg.remove(), 1600);
 }
 
 // Timer bar component
 export class TimerBar {
   private bar: HTMLElement;
-  private startTime = 0;
-  private duration = 0;
-  private rafId = 0;
+  private timerTween: gsap.core.Tween | null = null;
   private onExpire: (() => void) | null = null;
-  private active = false;
 
   constructor(barEl: HTMLElement) {
     this.bar = barEl;
@@ -122,17 +109,38 @@ export class TimerBar {
 
   start(seconds: number, onExpire: () => void): void {
     this.stop();
-    this.duration = seconds * 1000;
-    this.startTime = performance.now();
     this.onExpire = onExpire;
-    this.active = true;
     this.bar.style.display = 'block';
-    this.tick();
+
+    this.timerTween = gsap.fromTo(
+      this.bar,
+      { width: '100%', backgroundColor: '#6BFFB8' },
+      {
+        width: '0%',
+        backgroundColor: '#FF6B9D',
+        duration: seconds,
+        ease: 'none',
+        onUpdate: () => {
+          const progress = this.timerTween?.progress() ?? 0;
+          // Discrete color steps for clarity
+          if (progress < 0.5) {
+            this.bar.style.background = '#6BFFB8';
+          } else if (progress < 0.75) {
+            this.bar.style.background = '#FFD93D';
+          } else {
+            this.bar.style.background = '#FF6B9D';
+          }
+        },
+        onComplete: () => {
+          this.onExpire?.();
+        },
+      }
+    );
   }
 
   stop(): void {
-    this.active = false;
-    cancelAnimationFrame(this.rafId);
+    this.timerTween?.kill();
+    this.timerTween = null;
     this.bar.style.width = '100%';
   }
 
@@ -140,34 +148,6 @@ export class TimerBar {
     this.stop();
     this.bar.style.display = 'none';
   }
-
-  private tick = (): void => {
-    if (!this.active) return;
-    const elapsed = performance.now() - this.startTime;
-    const progress = Math.min(elapsed / this.duration, 1);
-    const remaining = 1 - progress;
-    this.bar.style.width = `${remaining * 100}%`;
-
-    // Color shifts from green → yellow → red as time runs out
-    if (remaining > 0.5) {
-      this.bar.style.background = '#6BFFB8';
-    } else if (remaining > 0.25) {
-      this.bar.style.background = '#FFD93D';
-    } else {
-      this.bar.style.background = '#FF6B9D';
-    }
-
-    if (progress >= 1) {
-      this.active = false;
-      this.onExpire?.();
-      return;
-    }
-    this.rafId = requestAnimationFrame(this.tick);
-  };
-}
-
-function delay(ms: number): Promise<void> {
-  return new Promise((r) => setTimeout(r, ms));
 }
 
 function rand(a: number, b: number): number {

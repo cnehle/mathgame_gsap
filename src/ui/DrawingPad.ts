@@ -1,6 +1,8 @@
 import type { Point } from '../types';
 import { NeuralRecognizer } from '../recognizer/neural';
 import { DrawingPreprocessor } from '../recognizer/preprocessor';
+import { pulseSuccess, shake } from '../effects/animations';
+import { gsap } from 'gsap';
 
 type RecognizedCallback = (result: {
   digit: number;
@@ -13,7 +15,7 @@ export class DrawingPad {
   private static recognizer: NeuralRecognizer | null = null;
   private static preprocessor: DrawingPreprocessor | null = null;
 
-/**
+  /**
    * Initializes the shared neural recognizer.
    * Call this once before creating any DrawingPad instances.
    * Loads from IndexedDB if available, otherwise trains a new model.
@@ -125,7 +127,8 @@ export class DrawingPad {
     this.points = [];
     this.currentPath = null;
     this.isDrawing = false;
-    this.svg.style.animation = '';
+    // Reset any GSAP-applied transforms
+    gsap.set(this.svg, { x: 0, scale: 1, clearProps: 'all' });
   }
 
   destroy(): void {
@@ -204,17 +207,18 @@ export class DrawingPad {
   private animateSuccess(): void {
     this.svg.querySelectorAll<SVGPathElement>('.drawn-path').forEach((p) => {
       p.setAttribute('stroke', '#00c853');
-      p.style.animation = 'drawSuccess 0.4s ease-in-out';
     });
+    // GSAP scale pulse on the whole SVG
+    pulseSuccess(this.svg as unknown as SVGElement);
   }
 
   private animateFailure(): void {
     this.svg.querySelectorAll<SVGPathElement>('.drawn-path').forEach((p) => {
       p.setAttribute('stroke', '#e53935');
     });
-    this.svg.style.animation = 'drawShake 0.5s ease-in-out';
+    // GSAP shake animation
+    shake(this.svg as unknown as SVGElement);
     setTimeout(() => {
-      this.svg.style.animation = '';
       this.points = [];
       this.svg.querySelectorAll('.drawn-path').forEach((p) => p.remove());
     }, 500);

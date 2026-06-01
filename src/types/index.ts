@@ -30,8 +30,6 @@ export interface GameState {
   totalQuestions: number;
   answered: boolean;
   difficulty: Difficulty;
-  responseTimes: number[];
-  questionStartTime: number;
 }
 
 export interface MouseState {

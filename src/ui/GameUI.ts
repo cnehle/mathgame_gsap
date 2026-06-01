@@ -4,6 +4,18 @@ import { MouseTracker, ParallaxBackground, CursorTrail } from '../effects/mouse'
 import { ScrollTransition, TimerBar, spawnCelebration } from '../effects/transitions';
 import { SVGMorpher } from '../effects/morpher';
 import { DrawingPad } from './DrawingPad';
+import {
+  animateShapes,
+  killShapeAnimations,
+  pulseCorrectButton,
+  buttonHoverIn,
+  buttonHoverOut,
+  animateTitle,
+  morphDecorationFloat,
+  pulseHint,
+  bounceTitle,
+} from '../effects/animations';
+import { gsap } from 'gsap';
 
 const BTN_FILLS = ['#FFD93D', '#FF6B9D', '#FF8C69', '#C3B1E1'];
 const BTN_STROKES = ['#8a5c00', '#8a1040', '#a03010', '#5a3e8a'];
@@ -59,6 +71,10 @@ export class GameUI {
     this.morpher = new SVGMorpher(this.morphSvg);
 
     this.buildStars();
+    // Start menu animations via GSAP
+    animateTitle(q<HTMLElement>('.title'));
+    morphDecorationFloat(this.morphSvg);
+    pulseHint(q<HTMLElement>('.scroll-hint'));
     this.bindMenuEvents();
     this.bindGameEvents();
     this.startMenuMorphLoop();
@@ -85,10 +101,20 @@ export class GameUI {
         this.startGame(diff);
       });
       btn.addEventListener('mouseenter', () => {
-        btn.style.transform = 'scale(1.08) rotate(-2deg)';
+        gsap.to(btn, {
+          scale: 1.08,
+          rotation: -2,
+          duration: 0.2,
+          ease: 'back.out(2)',
+        });
       });
       btn.addEventListener('mouseleave', () => {
-        btn.style.transform = '';
+        gsap.to(btn, {
+          scale: 1,
+          rotation: 0,
+          duration: 0.2,
+          ease: 'power2.out',
+        });
       });
     });
   }
@@ -121,17 +147,32 @@ export class GameUI {
     const stageEl = q<HTMLElement>('#loading-stage');
     const pctEl = q<HTMLElement>('#loading-pct');
     const barEl = q<HTMLElement>('#loading-bar');
+    const brainEl = q<SVGElement>('.loading-brain');
 
     overlay.classList.remove('hidden');
+
+    // Start GSAP brain pulse animation
+    const brainAnimation = gsap.to(brainEl, {
+      scale: 1.06,
+      duration: 1,
+      yoyo: true,
+      repeat: -1,
+      ease: 'sine.inOut',
+      transformOrigin: 'center center',
+    });
 
     await DrawingPad.initRecognizer((stage, pct) => {
       stageEl.textContent = stage;
       pctEl.textContent = `${Math.round(pct)}%`;
-      barEl.style.width = `${pct}%`;
+      // Animate progress bar width via GSAP instead of direct CSS
+      gsap.to(barEl, { width: `${pct}%`, duration: 0.3, ease: 'power2.out' });
     });
 
-    // Small delay so the user sees "Готово!"
     await new Promise((r) => setTimeout(r, 400));
+
+    // Stop brain pulse and hide overlay
+    brainAnimation.kill();
+    gsap.set(brainEl, { clearProps: 'all' });
     overlay.classList.add('hidden');
   }
 
@@ -181,6 +222,9 @@ export class GameUI {
     }
 
     this.morpher.morphToRandom();
+    // Trigger GSAP entrance animations on the new shapes
+    killShapeAnimations(this.objSvg);
+    animateShapes(this.objSvg);
   }
 
   // ── Drawing mode ──────────────────────────────────────────
@@ -201,7 +245,6 @@ export class GameUI {
 
       if (correct) {
         this.state.answered = true;
-        this.recordTime();
         this.state.score++;
         this.scoreEl.textContent = String(this.state.score);
         this.feedback.textContent =
@@ -244,14 +287,8 @@ export class GameUI {
         <text x="45" y="56" text-anchor="middle" dominant-baseline="middle"
           font-family="Fredoka One,cursive" font-size="44" fill="${s}">${num}</text>
       </svg>`;
-      btn.addEventListener('mouseenter', () => {
-        btn.style.transform = 'scale(1.12) translateY(-4px)';
-        btn.style.filter = `drop-shadow(0 8px 16px ${f}88)`;
-      });
-      btn.addEventListener('mouseleave', () => {
-        btn.style.transform = '';
-        btn.style.filter = '';
-      });
+      btn.addEventListener('mouseenter', () => buttonHoverIn(btn, f));
+      btn.addEventListener('mouseleave', () => buttonHoverOut(btn));
       btn.addEventListener('click', () => this.onAnswer(num, correct, btn));
       this.answersWrap.appendChild(btn);
     });
@@ -261,7 +298,6 @@ export class GameUI {
     if (this.state.answered) return;
     this.state.answered = true;
     this.timer.stop();
-    this.recordTime();
 
     if (chosen === correct) {
       this.state.score++;
@@ -280,7 +316,6 @@ export class GameUI {
   private onTimeUp(): void {
     if (this.state.answered) return;
     this.state.answered = true;
-    this.recordTime();
     this.feedback.textContent = 'Время вышло!';
     this.feedback.className = 'feedback wrong';
     this.highlightCorrect(this.currentAnswer);
@@ -299,8 +334,7 @@ export class GameUI {
         text.setAttribute('fill', '#004d20');
         svgEl.style.filter =
           'drop-shadow(0 0 10px #00e676) drop-shadow(0 0 20px #00e676)';
-        svgEl.style.animation =
-          'correctPulse 0.5s ease-in-out infinite alternate';
+        pulseCorrectButton(svgEl as unknown as SVGElement);
       }
     });
   }
@@ -322,11 +356,10 @@ export class GameUI {
     this.showButtonMode();
     this.gameScreen.classList.add('hidden');
     this.completeScreen.classList.remove('hidden');
+    // Bounce the title via GSAP
+    bounceTitle(q<HTMLElement>('.complete-title'));
 
-    const pct = Math.round((this.state.score / TOTAL) * 100);
     this.finalTxt.textContent = `Правильно: ${this.state.score} из ${TOTAL}!`;
-
-    this.buildResultsChart();
 
     q<HTMLButtonElement>('#restart-btn').onclick = () =>
       this.startGame(this.state.difficulty);
