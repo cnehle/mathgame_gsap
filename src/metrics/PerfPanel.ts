@@ -44,7 +44,7 @@ export class PerfPanel {
 
     // Ctrl+P / Cmd+P toggles the panel
     window.addEventListener('keydown', (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'p') {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'p') {
         e.preventDefault();
         this.toggle();
       }
