@@ -16,6 +16,7 @@ import {
   bounceTitle,
 } from '../effects/animations';
 import { gsap } from 'gsap';
+import { PerfPanel } from '../metrics/PerfPanel';
 
 const BTN_FILLS = ['#FFD93D', '#FF6B9D', '#FF8C69', '#C3B1E1'];
 const BTN_STROKES = ['#8a5c00', '#8a1040', '#a03010', '#5a3e8a'];
@@ -75,6 +76,8 @@ export class GameUI {
     animateTitle(q<HTMLElement>('.title'));
     morphDecorationFloat(this.morphSvg);
     pulseHint(q<HTMLElement>('.scroll-hint'));
+    // Performance test panel (Ctrl+P to open)
+    new PerfPanel('GSAP version', this.objSvg, this.morphSvg);
     this.bindMenuEvents();
     this.bindGameEvents();
     this.startMenuMorphLoop();

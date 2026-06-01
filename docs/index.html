@@ -8,8 +8,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;900&display=swap" rel="stylesheet"/>
-  <script type="module" crossorigin src="/mathgame_gsap/assets/index-DTxKDMjb.js"></script>
-  <link rel="stylesheet" crossorigin href="/mathgame_gsap/assets/index-DOQi-cvm.css">
+  <script type="module" crossorigin src="/mathgame_gsap/assets/index-CX2muHLG.js"></script>
+  <link rel="stylesheet" crossorigin href="/mathgame_gsap/assets/index-BgK_Qew5.css">
 </head>
 <body>
 
@@ -282,6 +282,25 @@
       Потом модель сохранится в браузере и будет открываться мгновенно.
     </p>
   </div>
+</div>
+<!-- ══ PERFORMANCE TEST PANEL (hidden by default, press Ctrl+P to show) ══ -->
+<div id="perf-panel" class="perf-panel hidden">
+  <div class="perf-panel-header">
+    <h3>📊 Замер производительности</h3>
+    <button id="perf-close" class="perf-close-btn">✕</button>
+  </div>
+  <p class="perf-panel-desc">
+    Запустит 3 теста: рендеринг фигур, морфинг, фоновую активность.
+    Займёт ~15 секунд. Результаты скопируются в буфер.
+  </p>
+  <button id="perf-run-btn" class="perf-run-btn">Запустить тест</button>
+  <div id="perf-progress" class="perf-progress" style="display:none">
+    <div id="perf-progress-stage" class="perf-progress-stage"></div>
+    <div class="perf-progress-track">
+      <div id="perf-progress-bar" class="perf-progress-bar"></div>
+    </div>
+  </div>
+  <pre id="perf-results" class="perf-results"></pre>
 </div>
 </body>
 </html>
