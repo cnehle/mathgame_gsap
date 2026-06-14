@@ -1,4 +1,5 @@
 import { StressTestSuite } from './StressTest';
+import { q } from '../utils';
 
 // ─────────────────────────────────────────────────────────────
 //  Performance Panel UI
@@ -92,10 +93,4 @@ export class PerfPanel {
 
     this.runBtn.disabled = false;
   }
-}
-
-function q<T extends HTMLElement>(selector: string): T {
-  const el = document.querySelector<T>(selector);
-  if (!el) throw new Error(`Not found: ${selector}`);
-  return el;
 }

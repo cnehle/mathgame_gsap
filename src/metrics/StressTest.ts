@@ -2,6 +2,7 @@ import { PerformanceTracker, type BenchmarkResult } from './PerformanceTracker';
 import { SHAPES } from '../shapes';
 import { buildObjectsSVG } from '../shapes/layout';
 import { SVGMorpher } from '../effects/morpher';
+import { delay } from '../utils';
 
 // ─────────────────────────────────────────────────────────────
 //  Stress Test Suite
@@ -50,13 +51,13 @@ export class StressTestSuite {
     results.push(await this.testShapeRendering(objSvg, onProgress));
 
     // Small pause between tests
-    await sleep(500);
+    await delay(500);
 
     // ── Test 2: morph transitions ──
     onProgress?.('Тест 2: морфинг', 33);
     results.push(await this.testMorphing(morphSvg, onProgress));
 
-    await sleep(500);
+    await delay(500);
 
     // ── Test 3: idle observation ──
     onProgress?.('Тест 3: фоновая активность', 66);
@@ -104,7 +105,7 @@ export class StressTestSuite {
           const shape = SHAPES[i % SHAPES.length];
           buildObjectsSVG(svgEl, 9, shape);
           // Allow the browser to render before the next batch
-          await sleep(50);
+          await delay(50);
           if (i % 5 === 0) {
             onProgress?.(`Тест 1: рендеринг фигур (${i}/50)`, (i / 50) * 33);
           }
@@ -140,7 +141,7 @@ export class StressTestSuite {
    */
   private async testIdleAnimation(): Promise<BenchmarkResult> {
     return this.tracker.benchmark('5 секунд фоновой анимации', async () => {
-      await sleep(5000);
+      await delay(5000);
     });
   }
 
@@ -168,8 +169,4 @@ export class StressTestSuite {
     lines.push('═'.repeat(60));
     return lines.join('\n');
   }
-}
-
-function sleep(ms: number): Promise<void> {
-  return new Promise((r) => setTimeout(r, ms));
 }

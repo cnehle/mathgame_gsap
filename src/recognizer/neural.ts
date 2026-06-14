@@ -11,6 +11,28 @@ export interface NeuralRecognitionResult {
   allScores: number[];
 }
 
+interface UserSample {
+  label: number;
+  pixels: number[];
+}
+
+async function loadUserSamples(filename: string): Promise<UserSample[]> {
+  try {
+    const baseUrl = import.meta.env.BASE_URL || '/';
+    const resp = await fetch(`${baseUrl}${filename}`);
+    if (!resp.ok) return [];
+    const raw: UserSample[] = await resp.json();
+    return raw.map((s) => {
+      const max = Math.max(...s.pixels);
+      return max > 1
+        ? { label: s.label, pixels: s.pixels.map((p: number) => p / 255) }
+        : s;
+    });
+  } catch {
+    return [];
+  }
+} 
+
 export class NeuralRecognizer {
   private model: tf.LayersModel | null = null;
   private isReady = false;
@@ -26,7 +48,7 @@ export class NeuralRecognizer {
       return;
     } catch {
       console.log('Готовая модель не найдена, пробуем IndexedDB...');
-    }
+    } 
 
     // 2. Try loading from browser storage
     try {
@@ -140,55 +162,88 @@ export class NeuralRecognizer {
   }
 
   private async train(
-    data: MnistData,
-    onProgress?: (pct: number) => void
-  ): Promise<void> {
-    if (!this.model) throw new Error('Model not built');
+  data: MnistData,
+  onProgress?: (pct: number) => void
+): Promise<void> {
+  if (!this.model) throw new Error('Model not built');
 
-    const BATCH_SIZE = 128;
-    const TRAIN_BATCHES = 800;
-    const TEST_BATCH_SIZE = 1000;
+  const BATCH_SIZE = 128;
+  const TRAIN_BATCHES = 800;
+  const TEST_BATCH_SIZE = 1000;
 
-    for (let i = 0; i < TRAIN_BATCHES; i++) {
-      const batch = data.nextTrainBatch(BATCH_SIZE);
+  // Load user-collected handwriting samples (extends MNIST)
+  const userSamples = await loadUserSamples('user-digits.json');
+  console.log(`Пользовательских примеров для обучения: ${userSamples.length}`);
 
-      const xs = tf.tidy(() => {
-        const reshaped = batch.xs.reshape([BATCH_SIZE, IMAGE_SIZE, IMAGE_SIZE, 1]);
-        return this.augment(reshaped);
-      });
+  for (let i = 0; i < TRAIN_BATCHES; i++) {
+    const batch = data.nextTrainBatch(BATCH_SIZE);
 
-      await this.model.fit(xs, batch.labels, {
-        batchSize: BATCH_SIZE,
-        epochs: 1,
-        verbose: 0,
-      });
+    const xs = tf.tidy(() => {
+      const reshaped = batch.xs.reshape([BATCH_SIZE, IMAGE_SIZE, IMAGE_SIZE, 1]);
+      return this.augment(reshaped);
+    });
 
-      xs.dispose();
-      batch.xs.dispose();
-      batch.labels.dispose();
+    await this.model.fit(xs, batch.labels, {
+      batchSize: BATCH_SIZE,
+      epochs: 1,
+      verbose: 0,
+    });
 
-      onProgress?.(((i + 1) / TRAIN_BATCHES) * 100);
+    xs.dispose();
+    batch.xs.dispose();
+    batch.labels.dispose();
 
-      if (i % 5 === 0) {
-        await new Promise((r) => setTimeout(r, 0));
-      }
-    }
+    // Every 10 MNIST batches — one batch of user samples (with augmentation)
+if (userSamples.length > 0 && i % 10 === 0) {
+  const USER_BATCH = 64;
+  const start = Math.floor(Math.random() * Math.max(1, userSamples.length - USER_BATCH));
+  const slice = userSamples.slice(start, start + USER_BATCH);
 
-    const testBatch = data.nextTestBatch(TEST_BATCH_SIZE);
-    const testXs = testBatch.xs.reshape([
-      TEST_BATCH_SIZE,
-      IMAGE_SIZE,
-      IMAGE_SIZE,
-      1,
+  const { userXs, userLabels } = tf.tidy(() => {
+    const flat = slice.flatMap((s) => s.pixels);
+    const tensor = tf.tensor4d(flat, [
+      slice.length, IMAGE_SIZE, IMAGE_SIZE, 1,
     ]);
-    const evalResult = this.model.evaluate(testXs, testBatch.labels) as tf.Scalar[];
-    const accuracy = (await evalResult[1].data())[0];
-    console.log(`Точность на тестовом наборе: ${(accuracy * 100).toFixed(2)}%`);
+    return {
+      userXs: this.augment(tensor),
+      userLabels: tf.oneHot(slice.map((s) => s.label), NUM_CLASSES),
+    };
+  });
 
-    testXs.dispose();
-    testBatch.xs.dispose();
-    testBatch.labels.dispose();
+  await this.model.fit(userXs, userLabels, {
+    batchSize: slice.length,
+    epochs: 1,
+    verbose: 0,
+  });
+
+  userXs.dispose();
+  userLabels.dispose();
+  await tf.nextFrame();
+}
+
+    onProgress?.(((i + 1) / TRAIN_BATCHES) * 100);
+
+    if (i % 5 === 0) {
+      await new Promise((r) => setTimeout(r, 0));
+    }
   }
+
+  // Evaluate on MNIST test set
+  const testBatch = data.nextTestBatch(TEST_BATCH_SIZE);
+  const testXs = testBatch.xs.reshape([
+    TEST_BATCH_SIZE, IMAGE_SIZE, IMAGE_SIZE, 1,
+  ]);
+  const evalResult = this.model.evaluate(testXs, testBatch.labels) as tf.Scalar[];
+  const accuracy = (await evalResult[1].data())[0];
+  console.log(`Точность на тестовом наборе MNIST: ${(accuracy * 100).toFixed(2)}%`);
+
+  testXs.dispose();
+  testBatch.xs.dispose();
+  testBatch.labels.dispose();
+this.isReady = true;
+  // Evaluate on held-out user samples
+  await this.evaluateOnUserSamples();
+}
 
   private augment(images: tf.Tensor): tf.Tensor {
     return tf.tidy(() => {
@@ -239,4 +294,23 @@ export class NeuralRecognizer {
   ready(): boolean {
     return this.isReady;
   }
+
+  async evaluateOnUserSamples(): Promise<void> {
+  if (!this.model) return;
+  const testSamples = await loadUserSamples('user-digits-test.json');
+  if (testSamples.length === 0) {
+    console.log('Тестовый набор пользовательских рисунков не найден');
+    return;
+  }
+
+  let correct = 0;
+  for (const s of testSamples) {
+    const result = this.predict(new Float32Array(s.pixels));
+    if (result.digit === s.label) correct++;
+  }
+  const acc = ((correct / testSamples.length) * 100).toFixed(1);
+  console.log(
+    `Точность на пользовательских рисунках: ${correct}/${testSamples.length} (${acc}%)`
+  );
+}
 }

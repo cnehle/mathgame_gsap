@@ -17,6 +17,7 @@ import {
 } from '../effects/animations';
 import { gsap } from 'gsap';
 import { PerfPanel } from '../metrics/PerfPanel';
+import { q, rand, delay } from '../utils';
 
 const BTN_FILLS = ['#FFD93D', '#FF6B9D', '#FF8C69', '#C3B1E1'];
 const BTN_STROKES = ['#8a5c00', '#8a1040', '#a03010', '#5a3e8a'];
@@ -393,18 +394,4 @@ export class GameUI {
       g.appendChild(c);
     }
   }
-}
-
-function q<T extends Element>(selector: string): T {
-  const el = document.querySelector<T>(selector);
-  if (!el) throw new Error(`Not found: ${selector}`);
-  return el;
-}
-
-function rand(a: number, b: number): number {
-  return Math.floor(Math.random() * (b - a + 1)) + a;
-}
-
-function delay(ms: number): Promise<void> {
-  return new Promise((r) => setTimeout(r, ms));
 }

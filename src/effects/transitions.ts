@@ -1,5 +1,6 @@
 import { gsap } from 'gsap';
 import { transitionCard } from './animations';
+import { rand } from '../utils';
 
 // Scroll-based slide transition between questions
 export class ScrollTransition {
@@ -148,8 +149,4 @@ export class TimerBar {
     this.stop();
     this.bar.style.display = 'none';
   }
-}
-
-function rand(a: number, b: number): number {
-  return Math.floor(Math.random() * (b - a + 1)) + a;
 }

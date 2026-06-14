@@ -1,6 +1,7 @@
 import type { Question, Difficulty, DifficultyConfig } from '../types';
 import { randomShape } from '../shapes';
 import { buildObjectsSVG } from '../shapes/layout';
+import { rand, shuffle } from '../utils';
 
 export const DIFFICULTY_CONFIG: Record<Difficulty, DifficultyConfig> = {
   easy: {
@@ -102,12 +103,4 @@ export function buildAnswerOptions(correct: number): number[] {
     if (w !== correct && !wrongs.includes(w)) wrongs.push(w);
   }
   return shuffle([correct, ...wrongs]);
-}
-
-function rand(a: number, b: number): number {
-  return Math.floor(Math.random() * (b - a + 1)) + a;
-}
-
-function shuffle<T>(arr: T[]): T[] {
-  return [...arr].sort(() => Math.random() - 0.5);
 }
