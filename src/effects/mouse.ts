@@ -1,5 +1,19 @@
 import type { MouseState } from '../types';
 import { gsap } from 'gsap';
+// ── Tuning constants ─────────────────────────────────────────
+/** Lerp smoothing factor: lower = heavier inertia. */
+const LERP_EASE = 0.06;
+/** Moon base position in background SVG coordinates. */
+const MOON_BASE_X = 880;
+const MOON_BASE_Y = 72;
+/** Parallax shift amplitudes per layer. */
+const STARS_SHIFT_X = 12;
+const STARS_SHIFT_Y = 8;
+const MOON_SHIFT_X = 30;
+const MOON_SHIFT_Y = 20;
+const CLOUD_SHIFT_EVEN = -18;
+const CLOUD_SHIFT_ODD = -12;
+const CLOUD_SHIFT_Y = 5;
 
 // ─────────────────────────────────────────────────────────────
 //  Mouse tracking — GSAP version
@@ -28,9 +42,16 @@ export class MouseTracker {
   };
 
   private tick = (): void => {
-    // Use GSAP's interpolation helper instead of manual lerp
-    this.state.normX = gsap.utils.interpolate(this.state.normX, this.targetNormX, 0.06);
-    this.state.normY = gsap.utils.interpolate(this.state.normY, this.targetNormY, 0.06);
+    this.state.normX = gsap.utils.interpolate(
+      this.state.normX,
+      this.targetNormX,
+      LERP_EASE,
+    );
+    this.state.normY = gsap.utils.interpolate(
+      this.state.normY,
+      this.targetNormY,
+      LERP_EASE,
+    );
     this.listeners.forEach((fn) => fn(this.state));
     this.rafId = requestAnimationFrame(this.tick);
   };
@@ -70,10 +91,22 @@ export class ParallaxBackground {
 
     // GSAP quickTo creates a function that animates a property to a value
     // efficiently — much faster than calling gsap.to() on every mousemove.
-    this.setStarsX = gsap.quickTo(starGroup, 'x', { duration: 0.6, ease: 'power2.out' });
-    this.setStarsY = gsap.quickTo(starGroup, 'y', { duration: 0.6, ease: 'power2.out' });
-    this.setMoonX = gsap.quickTo(moon, 'attr.cx', { duration: 0.6, ease: 'power2.out' });
-    this.setMoonY = gsap.quickTo(moon, 'attr.cy', { duration: 0.6, ease: 'power2.out' });
+    this.setStarsX = gsap.quickTo(starGroup, 'x', {
+      duration: 0.6,
+      ease: 'power2.out',
+    });
+    this.setStarsY = gsap.quickTo(starGroup, 'y', {
+      duration: 0.6,
+      ease: 'power2.out',
+    });
+    this.setMoonX = gsap.quickTo(moon, 'attr.cx', {
+      duration: 0.6,
+      ease: 'power2.out',
+    });
+    this.setMoonY = gsap.quickTo(moon, 'attr.cy', {
+      duration: 0.6,
+      ease: 'power2.out',
+    });
 
     clouds.forEach((c) => {
       this.cloudSetters.push({
@@ -83,14 +116,14 @@ export class ParallaxBackground {
     });
 
     this.unsub = tracker.subscribe(({ normX, normY }) => {
-      this.setStarsX(normX * 12);
-      this.setStarsY(normY * 8);
-      this.setMoonX(880 + normX * 30);
-      this.setMoonY(72 + normY * 20);
+      this.setStarsX(normX * STARS_SHIFT_X);
+      this.setStarsY(normY * STARS_SHIFT_Y);
+      this.setMoonX(MOON_BASE_X + normX * MOON_SHIFT_X);
+      this.setMoonY(MOON_BASE_Y + normY * MOON_SHIFT_Y);
       this.cloudSetters.forEach((setter, i) => {
-        const factor = i % 2 === 0 ? -18 : -12;
+        const factor = i % 2 === 0 ? CLOUD_SHIFT_EVEN : CLOUD_SHIFT_ODD;
         setter.x(normX * factor);
-        setter.y(normY * 5);
+        setter.y(normY * CLOUD_SHIFT_Y);
       });
     });
   }

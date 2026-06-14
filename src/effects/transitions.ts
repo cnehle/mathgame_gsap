@@ -1,6 +1,10 @@
 import { gsap } from 'gsap';
 import { transitionCard } from './animations';
 import { rand } from '../utils';
+/** Wheel deltaY threshold to advance to the next question. */
+const WHEEL_THRESHOLD = 30;
+/** Swipe distance (px) threshold on touch devices. */
+const SWIPE_THRESHOLD = 40;
 
 // Scroll-based slide transition between questions
 export class ScrollTransition {
@@ -17,7 +21,7 @@ export class ScrollTransition {
     this.container = container;
 
     this.wheelHandler = (e: WheelEvent) => {
-      if (e.deltaY > 30) this.triggerNext();
+      if (e.deltaY > WHEEL_THRESHOLD) this.triggerNext();
     };
 
     this.touchHandler = (e: TouchEvent) => {
@@ -26,12 +30,14 @@ export class ScrollTransition {
 
     this.touchEndHandler = (e: TouchEvent) => {
       const delta = this.touchStartY - e.changedTouches[0].clientY;
-      if (delta > 40) this.triggerNext();
+      if (delta > SWIPE_THRESHOLD) this.triggerNext();
     };
 
     window.addEventListener('wheel', this.wheelHandler, { passive: true });
     window.addEventListener('touchstart', this.touchHandler, { passive: true });
-    window.addEventListener('touchend', this.touchEndHandler, { passive: true });
+    window.addEventListener('touchend', this.touchEndHandler, {
+      passive: true,
+    });
   }
 
   onNext(fn: () => void): void {
@@ -39,10 +45,10 @@ export class ScrollTransition {
   }
 
   private triggerNext(): void {
-  if (this.isAnimating || !this.onScrollCallback) return;
-  if (!this.enabled) return;
-  this.onScrollCallback();
-}
+    if (this.isAnimating || !this.onScrollCallback) return;
+    if (!this.enabled) return;
+    this.onScrollCallback();
+  }
 
   // Animate card sliding out down, new content coming in from top
   async transition(onMidpoint: () => void): Promise<void> {
@@ -69,7 +75,7 @@ export function spawnCelebration(): void {
   const svg = document.createElementNS(ns, 'svg') as SVGSVGElement;
   svg.setAttribute('viewBox', '0 0 500 300');
   svg.style.cssText =
-  'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;z-index:9999;width:min(500px,90vw);height:min(300px,40vh);';
+    'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;z-index:9999;width:min(500px,90vw);height:min(300px,40vh);';
 
   const colors = ['#FFD93D', '#FF6B9D', '#6BFFB8', '#C3B1E1', '#FF8C69'];
 
@@ -83,9 +89,9 @@ export function spawnCelebration(): void {
     star.setAttribute(
       'points',
       `0,${-size} ${size * 0.3},${-size * 0.3} ${size},${-size * 0.3} ` +
-      `${size * 0.5},${size * 0.2} ${size * 0.7},${size * 0.9} ` +
-      `0,${size * 0.4} ${-size * 0.7},${size * 0.9} ` +
-      `${-size * 0.5},${size * 0.2} ${-size},${-size * 0.3} ${-size * 0.3},${-size * 0.3}`
+        `${size * 0.5},${size * 0.2} ${size * 0.7},${size * 0.9} ` +
+        `0,${size * 0.4} ${-size * 0.7},${size * 0.9} ` +
+        `${-size * 0.5},${size * 0.2} ${-size},${-size * 0.3} ${-size * 0.3},${-size * 0.3}`,
     );
     star.setAttribute('fill', color);
     star.setAttribute('transform', `translate(${cx},${cy})`);
@@ -135,7 +141,7 @@ export class TimerBar {
         onComplete: () => {
           this.onExpire?.();
         },
-      }
+      },
     );
   }
 

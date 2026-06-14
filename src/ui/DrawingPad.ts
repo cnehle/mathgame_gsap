@@ -14,6 +14,7 @@ export class DrawingPad {
   // Shared across all instances — model trains only once
   private static recognizer: NeuralRecognizer | null = null;
   private static preprocessor: DrawingPreprocessor | null = null;
+  private isRecognizing = false;
 
   /**
    * Initializes the shared neural recognizer.
@@ -21,7 +22,7 @@ export class DrawingPad {
    * Loads from IndexedDB if available, otherwise trains a new model.
    */
   static async initRecognizer(
-    onProgress?: (stage: string, pct: number) => void
+    onProgress?: (stage: string, pct: number) => void,
   ): Promise<void> {
     if (DrawingPad.recognizer && DrawingPad.recognizer.ready()) return;
     DrawingPad.recognizer = new NeuralRecognizer();
@@ -31,6 +32,7 @@ export class DrawingPad {
 
   private svg: SVGSVGElement;
   private currentPath: SVGPathElement | null = null;
+  private currentD = '';
   private points: Point[] = [];
   private isDrawing = false;
   private correctAnswer = 0;
@@ -86,6 +88,7 @@ export class DrawingPad {
   }
 
   recognize(): void {
+    if (this.isRecognizing) return; // ignore double-taps during animation
     if (this.points.length < 8) {
       this.onRecognizedCb?.({ digit: -1, score: 0, correct: false });
       return;
@@ -94,32 +97,28 @@ export class DrawingPad {
       console.error('Recognizer not initialized');
       return;
     }
+    this.isRecognizing = true;
 
     // Convert SVG drawing to 28×28 MNIST format
     const imageData = DrawingPad.preprocessor.process(this.svg);
     const result = DrawingPad.recognizer.predict(imageData);
 
-    console.log(
-      'Neural prediction:',
-      result.allScores
-        .map((s, i) => `${i}:${(s * 100).toFixed(1)}%`)
-        .join(' ')
-    );
-    console.log(`Best: ${result.digit} (${(result.score * 100).toFixed(1)}%)`);
-
-    const correct =
-      result.digit === this.correctAnswer && result.score > 0.5;
+    const correct = result.digit === this.correctAnswer && result.score > 0.5;
 
     if (correct) this.animateSuccess();
     else this.animateFailure();
 
-    setTimeout(() => {
-      this.onRecognizedCb?.({
-        digit: result.digit,
-        score: result.score,
-        correct,
-      });
-    }, correct ? 400 : 500);
+    setTimeout(
+      () => {
+        this.isRecognizing = false;
+        this.onRecognizedCb?.({
+          digit: result.digit,
+          score: result.score,
+          correct,
+        });
+      },
+      correct ? 400 : 500,
+    );
   }
 
   clear(): void {
@@ -127,6 +126,7 @@ export class DrawingPad {
     this.points = [];
     this.currentPath = null;
     this.isDrawing = false;
+    this.isRecognizing = false;
     // Reset any GSAP-applied transforms
     gsap.set(this.svg, { x: 0, scale: 1, clearProps: 'all' });
   }
@@ -141,8 +141,12 @@ export class DrawingPad {
     this.svg.addEventListener('mousemove', this.onMove);
     this.svg.addEventListener('mouseup', this.onEnd);
     this.svg.addEventListener('mouseleave', this.onEnd);
-    this.svg.addEventListener('touchstart', this.onTouchStart, { passive: false });
-    this.svg.addEventListener('touchmove', this.onTouchMove, { passive: false });
+    this.svg.addEventListener('touchstart', this.onTouchStart, {
+      passive: false,
+    });
+    this.svg.addEventListener('touchmove', this.onTouchMove, {
+      passive: false,
+    });
     this.svg.addEventListener('touchend', this.onEnd);
   }
 
@@ -175,7 +179,9 @@ export class DrawingPad {
   private onTouchMove = (e: TouchEvent): void => {
     e.preventDefault();
     if (!this.isDrawing) return;
-    this.continueStroke(this.svgPoint(e.touches[0].clientX, e.touches[0].clientY));
+    this.continueStroke(
+      this.svgPoint(e.touches[0].clientX, e.touches[0].clientY),
+    );
   };
 
   private onEnd = (): void => {
@@ -193,15 +199,18 @@ export class DrawingPad {
     this.currentPath.setAttribute('stroke-width', '6');
     this.currentPath.setAttribute('stroke-linecap', 'round');
     this.currentPath.setAttribute('stroke-linejoin', 'round');
-    this.currentPath.setAttribute('d', `M ${pt.x} ${pt.y}`);
+    this.currentD = `M ${pt.x} ${pt.y}`;
+    this.currentPath.setAttribute('d', this.currentD);
     this.svg.appendChild(this.currentPath);
   }
 
   private continueStroke(pt: Point): void {
     this.points.push(pt);
     if (!this.currentPath) return;
-    const d = this.currentPath.getAttribute('d') ?? '';
-    this.currentPath.setAttribute('d', `${d} L ${pt.x} ${pt.y}`);
+    // Keep path string in memory — avoids re-reading the DOM attribute
+    // on every move event (which was O(n²) over the stroke length)
+    this.currentD += ` L ${pt.x} ${pt.y}`;
+    this.currentPath.setAttribute('d', this.currentD);
   }
 
   private animateSuccess(): void {

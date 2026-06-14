@@ -119,7 +119,7 @@ export class PerformanceTracker {
    */
   async benchmark(
     label: string,
-    fn: () => void | Promise<void>
+    fn: () => void | Promise<void>,
   ): Promise<BenchmarkResult> {
     const memoryBefore = this.snapshotMemory();
     this.startRecording();
@@ -155,17 +155,18 @@ export class PerformanceTracker {
         `  Avg FPS:     ${fm.avgFps.toFixed(1)}`,
         `  Min FPS:     ${fm.minFps.toFixed(1)}`,
         `  Long frames: ${fm.longFrames} / ${fm.totalFrames} (${((fm.longFrames / fm.totalFrames) * 100).toFixed(1)}%)`,
-        `  Worst frame: ${fm.maxFrameTime.toFixed(2)}ms`
+        `  Worst frame: ${fm.maxFrameTime.toFixed(2)}ms`,
       );
     }
 
     if (result.memoryBefore && result.memoryAfter) {
       const deltaMB =
-        (result.memoryAfter.usedJSHeapSize - result.memoryBefore.usedJSHeapSize) /
+        (result.memoryAfter.usedJSHeapSize -
+          result.memoryBefore.usedJSHeapSize) /
         (1024 * 1024);
       const totalMB = result.memoryAfter.usedJSHeapSize / (1024 * 1024);
       lines.push(
-        `  Memory:      ${totalMB.toFixed(2)} MB (Δ ${deltaMB > 0 ? '+' : ''}${deltaMB.toFixed(2)} MB)`
+        `  Memory:      ${totalMB.toFixed(2)} MB (Δ ${deltaMB > 0 ? '+' : ''}${deltaMB.toFixed(2)} MB)`,
       );
     }
 

@@ -6,7 +6,7 @@ const ORIGIN: Point = { x: 0, y: 0 };
 
 export function recognize(
   points: Point[],
-  templates: RecognizerTemplate[]
+  templates: RecognizerTemplate[],
 ): RecognitionResult {
   const candidate = normalize(points);
   let bestScore = -Infinity;
@@ -21,7 +21,10 @@ export function recognize(
       bestDigit = tmpl.digit;
     }
   }
-  console.log('Recognition scores:', scores.map(s => `${s.digit}:${s.score.toFixed(3)}`).join(' '));
+  console.log(
+    'Recognition scores:',
+    scores.map((s) => `${s.digit}:${s.score.toFixed(3)}`).join(' '),
+  );
   console.log('Best:', bestDigit, 'score:', bestScore);
   return { digit: bestDigit, score: Math.max(0, bestScore) };
 }
@@ -97,8 +100,10 @@ function resample(points: Point[], n: number): Point[] {
       continue;
     }
     if (D + d >= I) {
-      const qx = working[i - 1].x + ((I - D) / d) * (working[i].x - working[i - 1].x);
-      const qy = working[i - 1].y + ((I - D) / d) * (working[i].y - working[i - 1].y);
+      const qx =
+        working[i - 1].x + ((I - D) / d) * (working[i].x - working[i - 1].x);
+      const qy =
+        working[i - 1].y + ((I - D) / d) * (working[i].y - working[i - 1].y);
       const q: Point = { x: qx, y: qy };
       newPoints.push(q);
       working.splice(i, 0, q);

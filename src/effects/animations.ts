@@ -21,7 +21,10 @@ export function animateShapes(svgEl: SVGSVGElement): void {
     // Reset any leftover state
     gsap.set(shape, {
       transformOrigin: 'center center',
-      svgOrigin: shape.getBoundingClientRect().left + ' ' + shape.getBoundingClientRect().top,
+      svgOrigin:
+        shape.getBoundingClientRect().left +
+        ' ' +
+        shape.getBoundingClientRect().top,
     });
 
     // Entrance pop-in
@@ -47,7 +50,7 @@ export function animateShapes(svgEl: SVGSVGElement): void {
             transformOrigin: 'center center',
           });
         },
-      }
+      },
     );
   });
 }
@@ -91,7 +94,7 @@ export function celebrate(svgEl: SVGSVGElement): void {
         duration: 0.9 + Math.random() * 0.5,
         delay: i * 0.04,
         ease: 'power2.out',
-      }
+      },
     );
   });
 }
@@ -127,7 +130,7 @@ export function shake(el: SVGElement | HTMLElement): void {
         x: [-8, 8, -5, 5, 0],
         easeEach: 'sine.inOut',
       },
-    }
+    },
   );
 }
 
@@ -146,7 +149,7 @@ export function pulseSuccess(el: SVGElement | HTMLElement): void {
       repeat: 1,
       ease: 'sine.inOut',
       transformOrigin: 'center center',
-    }
+    },
   );
 }
 
@@ -156,7 +159,7 @@ export function pulseSuccess(el: SVGElement | HTMLElement): void {
  */
 export function transitionCard(
   card: HTMLElement,
-  onMidpoint: () => void
+  onMidpoint: () => void,
 ): Promise<void> {
   return new Promise((resolve) => {
     const tl = gsap.timeline({ onComplete: resolve });
@@ -175,7 +178,7 @@ export function transitionCard(
         opacity: 1,
         duration: 0.4,
         ease: 'back.out(1.2)',
-      }
+      },
     );
   });
 }
@@ -212,7 +215,7 @@ export function animateTitle(el: HTMLElement): void {
   gsap.fromTo(
     el,
     { y: -30, opacity: 0 },
-    { y: 0, opacity: 1, duration: 0.7, ease: 'back.out(1.7)' }
+    { y: 0, opacity: 1, duration: 0.7, ease: 'back.out(1.7)' },
   );
 }
 
@@ -244,7 +247,7 @@ export function pulseHint(el: HTMLElement): void {
       yoyo: true,
       repeat: -1,
       ease: 'sine.inOut',
-    }
+    },
   );
 }
 

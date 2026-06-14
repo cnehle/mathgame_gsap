@@ -10,7 +10,7 @@ export function buildObjectsSVG(
   svgEl: SVGSVGElement,
   count: number,
   shape: Shape,
-  crossOutLast = 0
+  crossOutLast = 0,
 ): void {
   const cols = count <= 3 ? count : count <= 6 ? 3 : 3;
   const rows = Math.ceil(count / cols);
@@ -24,8 +24,7 @@ export function buildObjectsSVG(
   for (let i = 0; i < count; i++) {
     const row = Math.floor(i / cols);
     const col = i % cols;
-    const rowLen =
-      row === rows - 1 && count % cols !== 0 ? count % cols : cols;
+    const rowLen = row === rows - 1 && count % cols !== 0 ? count % cols : cols;
     const rowWidth = rowLen * STEP - GAP;
     const startX = (SVG_W - rowWidth) / 2 + OBJ_R;
     const cx = startX + col * STEP;

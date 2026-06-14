@@ -17,31 +17,27 @@ export class DrawingPreprocessor {
    * Float32Array (values 0..1) matching MNIST format (white digit on black).
    */
   process(svg: SVGSVGElement): Float32Array {
-    // 1. Serialize SVG to data URI
-    const svgString = new XMLSerializer().serializeToString(svg);
-    const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
-    const url = URL.createObjectURL(svgBlob);
-
-    // 2. Find bounding box of all drawn paths to crop tightly
+    // Find bounding box of all drawn paths to crop tightly
     const bbox = this.computeBoundingBox(svg);
-    URL.revokeObjectURL(url);
-
     if (!bbox) {
       // Empty drawing → return all zeros
       return new Float32Array(28 * 28);
     }
 
-    // 3. Rasterize at 28×28 with padding so digit isn't touching edges
+    // Rasterize at 28×28 with padding so digit isn't touching edges
     return this.rasterize(svg, bbox);
   }
 
   private computeBoundingBox(
-    svg: SVGSVGElement
+    svg: SVGSVGElement,
   ): { x: number; y: number; w: number; h: number } | null {
     const paths = svg.querySelectorAll<SVGPathElement>('.drawn-path');
     if (paths.length === 0) return null;
 
-    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    let minX = Infinity,
+      minY = Infinity,
+      maxX = -Infinity,
+      maxY = -Infinity;
 
     paths.forEach((p) => {
       const bb = p.getBBox();
@@ -57,7 +53,7 @@ export class DrawingPreprocessor {
 
   private rasterize(
     svg: SVGSVGElement,
-    bbox: { x: number; y: number; w: number; h: number }
+    bbox: { x: number; y: number; w: number; h: number },
   ): Float32Array {
     // Center the digit in a 28×28 image with ~4px padding (MNIST style)
     const padding = 4;
@@ -103,7 +99,7 @@ export class DrawingPreprocessor {
     bbox: { x: number; y: number; w: number; h: number },
     scale: number,
     offsetX: number,
-    offsetY: number
+    offsetY: number,
   ): void {
     this.ctx.beginPath();
     const transform = (px: number, py: number): [number, number] => [

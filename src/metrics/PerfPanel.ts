@@ -20,11 +20,7 @@ export class PerfPanel {
   private progressBar: HTMLElement;
   private resultsEl: HTMLElement;
 
-  constructor(
-    version: string,
-    objSvg: SVGSVGElement,
-    morphSvg: SVGSVGElement
-  ) {
+  constructor(version: string, objSvg: SVGSVGElement, morphSvg: SVGSVGElement) {
     this.version = version;
     this.objSvg = objSvg;
     this.morphSvg = morphSvg;
@@ -45,7 +41,11 @@ export class PerfPanel {
 
     // Ctrl+P / Cmd+P toggles the panel
     window.addEventListener('keydown', (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'p') {
+      if (
+        (e.ctrlKey || e.metaKey) &&
+        e.shiftKey &&
+        e.key.toLowerCase() === 'p'
+      ) {
         e.preventDefault();
         this.toggle();
       }

@@ -41,7 +41,7 @@ export class MnistData {
     canvas.height = img.height;
     const ctx = canvas.getContext('2d')!;
     const datasetBytesBuffer = new ArrayBuffer(
-      NUM_DATASET_ELEMENTS * IMAGE_SIZE * 4
+      NUM_DATASET_ELEMENTS * IMAGE_SIZE * 4,
     );
     const chunkSize = 5000;
 
@@ -49,14 +49,18 @@ export class MnistData {
       const datasetBytesView = new Float32Array(
         datasetBytesBuffer,
         i * IMAGE_SIZE * chunkSize * 4,
-        IMAGE_SIZE * chunkSize
+        IMAGE_SIZE * chunkSize,
       );
       ctx.drawImage(
         img,
-        0, i * chunkSize,
-        img.width, chunkSize,
-        0, 0,
-        img.width, chunkSize
+        0,
+        i * chunkSize,
+        img.width,
+        chunkSize,
+        0,
+        0,
+        img.width,
+        chunkSize,
       );
       const imageData = ctx.getImageData(0, 0, canvas.width, chunkSize);
       for (let j = 0; j < imageData.data.length / 4; j++) {
@@ -64,7 +68,9 @@ export class MnistData {
         // so just read the red channel
         datasetBytesView[j] = imageData.data[j * 4] / 255;
       }
-      onProgress?.(30 + Math.floor((i / (NUM_DATASET_ELEMENTS / chunkSize)) * 50));
+      onProgress?.(
+        30 + Math.floor((i / (NUM_DATASET_ELEMENTS / chunkSize)) * 50),
+      );
     }
 
     this.datasetImages = new Float32Array(datasetBytesBuffer);
@@ -81,9 +87,10 @@ export class MnistData {
       batchSize,
       [this.datasetImages!, this.datasetLabels!],
       () => {
-        this.shuffledTrainIndex = (this.shuffledTrainIndex + 1) % this.trainIndices!.length;
+        this.shuffledTrainIndex =
+          (this.shuffledTrainIndex + 1) % this.trainIndices!.length;
         return this.trainIndices![this.shuffledTrainIndex];
-      }
+      },
     );
   }
 
@@ -92,25 +99,32 @@ export class MnistData {
       batchSize,
       [this.datasetImages!, this.datasetLabels!],
       () => {
-        this.shuffledTestIndex = (this.shuffledTestIndex + 1) % this.testIndices!.length;
+        this.shuffledTestIndex =
+          (this.shuffledTestIndex + 1) % this.testIndices!.length;
         return this.testIndices![this.shuffledTestIndex];
-      }
+      },
     );
   }
 
   private nextBatch(
     batchSize: number,
     data: [Float32Array, Uint8Array],
-    indexFn: () => number
+    indexFn: () => number,
   ): { xs: tf.Tensor; labels: tf.Tensor } {
     const batchImagesArray = new Float32Array(batchSize * IMAGE_SIZE);
     const batchLabelsArray = new Uint8Array(batchSize * NUM_CLASSES);
 
     for (let i = 0; i < batchSize; i++) {
       const idx = indexFn();
-      const image = data[0].slice(idx * IMAGE_SIZE, idx * IMAGE_SIZE + IMAGE_SIZE);
+      const image = data[0].slice(
+        idx * IMAGE_SIZE,
+        idx * IMAGE_SIZE + IMAGE_SIZE,
+      );
       batchImagesArray.set(image, i * IMAGE_SIZE);
-      const label = data[1].slice(idx * NUM_CLASSES, idx * NUM_CLASSES + NUM_CLASSES);
+      const label = data[1].slice(
+        idx * NUM_CLASSES,
+        idx * NUM_CLASSES + NUM_CLASSES,
+      );
       batchLabelsArray.set(label, i * NUM_CLASSES);
     }
 

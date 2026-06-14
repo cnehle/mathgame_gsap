@@ -42,7 +42,7 @@ export class StressTestSuite {
   async run(
     objSvg: SVGSVGElement,
     morphSvg: SVGSVGElement,
-    onProgress?: (stage: string, pct: number) => void
+    onProgress?: (stage: string, pct: number) => void,
   ): Promise<StressTestReport> {
     const results: BenchmarkResult[] = [];
 
@@ -74,7 +74,7 @@ export class StressTestSuite {
       validFps.reduce((s, f) => s + f, 0) / Math.max(validFps.length, 1);
     const totalLongFrames = results.reduce(
       (s, r) => s + (r.frameMetrics?.longFrames ?? 0),
-      0
+      0,
     );
 
     return {
@@ -96,7 +96,7 @@ export class StressTestSuite {
    */
   private async testShapeRendering(
     svgEl: SVGSVGElement,
-    onProgress?: (stage: string, pct: number) => void
+    onProgress?: (stage: string, pct: number) => void,
   ): Promise<BenchmarkResult> {
     return this.tracker.benchmark(
       'Рендеринг 50×9 фигур с анимациями',
@@ -110,7 +110,7 @@ export class StressTestSuite {
             onProgress?.(`Тест 1: рендеринг фигур (${i}/50)`, (i / 50) * 33);
           }
         }
-      }
+      },
     );
   }
 
@@ -120,7 +120,7 @@ export class StressTestSuite {
    */
   private async testMorphing(
     morphSvg: SVGSVGElement,
-    onProgress?: (stage: string, pct: number) => void
+    onProgress?: (stage: string, pct: number) => void,
   ): Promise<BenchmarkResult> {
     // Fresh morpher instance for the test
     morphSvg.innerHTML = '';
@@ -163,8 +163,12 @@ export class StressTestSuite {
     lines.push('─'.repeat(60));
     lines.push('  ИТОГ');
     lines.push('─'.repeat(60));
-    lines.push(`Общее время:     ${(report.summary.totalDurationMs / 1000).toFixed(2)}с`);
-    lines.push(`Средний FPS:     ${report.summary.avgFpsAcrossTests.toFixed(1)}`);
+    lines.push(
+      `Общее время:     ${(report.summary.totalDurationMs / 1000).toFixed(2)}с`,
+    );
+    lines.push(
+      `Средний FPS:     ${report.summary.avgFpsAcrossTests.toFixed(1)}`,
+    );
     lines.push(`Долгих кадров:   ${report.summary.totalLongFrames}`);
     lines.push('═'.repeat(60));
     return lines.join('\n');
