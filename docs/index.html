@@ -8,8 +8,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;900&display=swap" rel="stylesheet"/>
-  <script type="module" crossorigin src="/mathgame_gsap/assets/index-DlKfx8RM.js"></script>
-  <link rel="stylesheet" crossorigin href="/mathgame_gsap/assets/index-BJzVcttB.css">
+  <script type="module" crossorigin src="/mathgame_gsap/assets/index-DD-a9RhM.js"></script>
+  <link rel="stylesheet" crossorigin href="/mathgame_gsap/assets/index-B-wujYTX.css">
 </head>
 <body>
 
@@ -178,6 +178,7 @@
   <div id="app">
     <h1 class="title-sm">Считай и играй</h1>
     <div class="scorebar">
+      <button id="back-menu-btn" class="pill pill-btn" aria-label="Вернуться в меню">← Меню</button>
       <div class="pill">Счёт: <span id="score-val">0</span></div>
       <div class="pill">Вопрос: <span id="q-num">1</span>/10</div>
     </div>
@@ -269,7 +270,7 @@
       </circle>
     </svg>
 
-    <h2 class="loading-title">Подготавливаем нейросеть</h2>
+    <h2 class="loading-title">Подготавливаем режим рисования</h2>
     <p id="loading-stage" class="loading-stage">Загрузка...</p>
 
     <div class="loading-track">
@@ -278,8 +279,8 @@
     <p id="loading-pct" class="loading-pct">0%</p>
 
     <p class="loading-hint">
-      В первый раз нужно подождать ~30 секунд.<br/>
-      Потом модель сохранится в браузере и будет открываться мгновенно.
+      В первый раз возможно придется подождать подольше.<br/>
+      Потом игра будет открываться мгновенно.
     </p>
   </div>
 </div>

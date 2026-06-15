@@ -204,6 +204,9 @@ export class GameUI {
     this.drawClearBtn.addEventListener('click', () => {
       this.drawingPad?.clear();
     });
+    q<HTMLButtonElement>('#back-menu-btn').addEventListener('click', () =>
+      this.backToMenu(),
+    );
   }
 
   private loadQuestion(): void {
@@ -393,6 +396,21 @@ export class GameUI {
       this.menuScreen.classList.remove('hidden');
       this.startMenuMorphLoop();
     };
+  }
+
+  // ── Back to menu (during gameplay) ────────────────────────
+  private backToMenu(): void {
+    this.timer.stop(); // остановить таймер, если шёл
+    this.timer.hide();
+    this.scrollTransition.enabled = false;
+    this.drawingPad?.clear();
+    this.state.phase = 'menu';
+    this.state.answered = true; // подстраховка от поздних колбэков
+
+    this.gameScreen.classList.add('hidden');
+    this.completeScreen.classList.add('hidden');
+    this.menuScreen.classList.remove('hidden');
+    this.startMenuMorphLoop();
   }
 
   // ── Stars ─────────────────────────────────────────────────
